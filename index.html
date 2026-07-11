@@ -1,0 +1,203 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Prayer Chain</title>
+<meta name="description" content="Invite-only prayer requests and prayer chain for our church." />
+<meta name="theme-color" content="#45a0e4" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./assets/icons/favicon-32.png" sizes="32x32" />
+<link rel="icon" href="./assets/icons/icon-192.png" sizes="192x192" />
+<!-- iOS "Add to Home Screen" -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Prayer Chain" />
+<link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
+<link rel="stylesheet" href="./css/style.css" />
+
+<div id="app">
+  <!-- Header -->
+  <header class="topbar" hidden>
+    <div class="topbar-inner">
+      <div class="brand">
+        <img class="brand-mark" src="./assets/logo-display.png" alt="" />
+        <span class="brand-lines">
+          <span class="brand-text">Prayer Chain</span>
+          <span class="brand-church">Your Church Name</span>
+        </span>
+      </div>
+      <div class="topbar-right">
+        <button id="listNavBtn" class="btn btn-ghost list-nav" type="button">📋 Prayer List</button>
+        <div class="menu-wrap">
+          <button id="menuBtn" class="btn btn-ghost menu-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">⋯</button>
+          <div id="menu" class="menu" role="menu" hidden>
+            <button id="notifyMenuBtn" class="menu-item" type="button" role="menuitem" hidden>🔔 Turn on prayer alerts</button>
+            <button id="membersBtn" class="menu-item" type="button" role="menuitem">👥 Members</button>
+            <button id="signOutBtn" class="menu-item" type="button" role="menuitem">↩ Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Setup-needed banner -->
+  <div id="setupBanner" class="banner" hidden>
+    <strong>Almost there.</strong> This app isn't connected to Firebase yet.
+    Open <code>js/firebase-config.js</code> and paste your project's config.
+    Step-by-step guide: <code>BUILD-GUIDE.md</code>.
+  </div>
+
+  <!-- Auth view -->
+  <main id="authView" class="auth" hidden>
+    <div class="auth-card">
+      <img class="auth-logo" src="./assets/logo-display.png" alt="" />
+      <h1 class="auth-title">Prayer Chain</h1>
+      <p class="auth-sub">A private place for our church family to share requests and pray for one another.</p>
+
+      <div class="tabs" role="tablist">
+        <button class="tab is-active" id="tabSignIn" role="tab" type="button">Sign in</button>
+        <button class="tab" id="tabSignUp" role="tab" type="button">Join</button>
+      </div>
+
+      <form id="authForm" class="auth-form" autocomplete="on">
+        <label class="field signup-only" hidden>
+          <span>Your name</span>
+          <input id="nameInput" type="text" autocomplete="name" placeholder="First &amp; last name" />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input id="emailInput" type="email" autocomplete="email" required placeholder="you@email.com" />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="passwordInput" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters" />
+        </label>
+        <label class="field signup-only" hidden>
+          <span>Invite code</span>
+          <input id="inviteInput" type="text" autocomplete="off" placeholder="Code from your church" />
+          <small class="hint">Ask a leader for the current invite code. This keeps the group private.</small>
+        </label>
+
+        <p id="authError" class="form-error" role="alert" hidden></p>
+        <button id="authSubmit" class="btn btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+    </div>
+    <p class="footer-note">No direct messages. Everything shared here goes to the whole prayer chain.</p>
+  </main>
+
+  <!-- Feed view -->
+  <main id="feedView" class="feed" hidden>
+    <!-- Android/desktop install prompt (shown only when installable) -->
+    <div id="installBar" class="install-bar" hidden>
+      <img src="./assets/logo-display.png" alt="" />
+      <div class="grow">
+        <div class="it">Add Prayer Chain to your home screen</div>
+        <div class="is">Open it like an app — one tap, no browser bar.</div>
+      </div>
+      <button id="installBtn" class="btn btn-primary" type="button">Add</button>
+      <button id="installDismiss" class="x" type="button" aria-label="Dismiss">×</button>
+    </div>
+    <!-- iOS install hint (Safari has no install button) -->
+    <div id="iosHelp" class="ios-help" hidden>
+      To install: tap the <b>Share</b> icon <span aria-hidden="true">􀈂</span> in Safari, then
+      <b>Add to Home Screen</b>. <button id="iosDismiss" class="x" type="button" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- Prayer-alert opt-in (shown when notifications are set up but not yet allowed) -->
+    <div id="notifyBar" class="install-bar" hidden>
+      <span aria-hidden="true" style="font-size:1.6rem">🔔</span>
+      <div class="grow">
+        <div class="it">Turn on prayer alerts</div>
+        <div class="is">Get notified of new requests and answered prayers. No alerts for comments.</div>
+      </div>
+      <button id="notifyBtn" class="btn btn-primary" type="button">Allow</button>
+      <button id="notifyDismiss" class="x" type="button" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="feed-tabs" role="tablist" aria-label="Filter prayers">
+      <button class="chip is-active" data-filter="all" type="button">All</button>
+      <button class="chip" data-filter="urgent" type="button">Urgent</button>
+      <button class="chip" data-filter="answered" type="button">Answered</button>
+      <button class="chip" data-filter="mine" type="button">Mine</button>
+    </div>
+
+    <button id="newPrayerBtn" class="btn btn-primary btn-new" type="button">
+      <span aria-hidden="true">＋</span> Share a prayer request
+    </button>
+
+    <div id="feedList" class="feed-list" aria-live="polite"></div>
+    <div id="feedEmpty" class="empty" hidden></div>
+  </main>
+
+  <!-- Weekly Prayer List view -->
+  <main id="listView" class="feed" hidden>
+    <div class="list-head">
+      <button id="listBack" class="btn btn-ghost" type="button">← Feed</button>
+      <h2 class="list-title">Weekly Prayer List</h2>
+      <div class="list-head-actions">
+        <button id="listEdit" class="btn btn-primary" type="button" hidden>Edit</button>
+        <button id="listSave" class="btn btn-primary" type="button" hidden>Save</button>
+        <button id="listCancel" class="btn btn-ghost" type="button" hidden>Cancel</button>
+      </div>
+    </div>
+    <p id="listError" class="form-error" role="alert" hidden></p>
+    <div id="listBody" class="list-body"></div>
+    <div id="listEditor" class="list-editor" hidden></div>
+    <p id="listMeta" class="list-meta"></p>
+  </main>
+</div>
+
+<!-- Composer dialog -->
+<dialog id="composer" class="dialog">
+  <form method="dialog" class="dialog-form" id="composerForm">
+    <h2 class="dialog-title">Share a prayer request</h2>
+    <label class="field">
+      <span>Title <small>(optional)</small></span>
+      <input id="cTitle" type="text" maxlength="80" placeholder="Short summary" />
+    </label>
+    <label class="field">
+      <span>Request</span>
+      <textarea id="cBody" rows="5" maxlength="2000" required placeholder="What can the chain pray for?"></textarea>
+    </label>
+    <label class="field">
+      <span>Category</span>
+      <select id="cCategory">
+        <option value="General">General</option>
+        <option value="Healing">Healing</option>
+        <option value="Family">Family</option>
+        <option value="Salvation">Salvation</option>
+        <option value="Grief">Grief / Loss</option>
+        <option value="Provision">Provision</option>
+        <option value="Guidance">Guidance</option>
+        <option value="Thanksgiving">Praise / Thanksgiving</option>
+      </select>
+    </label>
+    <label class="check">
+      <input id="cUrgent" type="checkbox" />
+      <span>Mark as urgent</span>
+    </label>
+    <p id="composerError" class="form-error" role="alert" hidden></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" id="composerCancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="composerSubmit">Post to the chain</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Members / moderation dialog -->
+<dialog id="membersDialog" class="dialog">
+  <div class="dialog-form">
+    <div class="members-head">
+      <h2 class="dialog-title">Members</h2>
+      <button type="button" class="btn btn-ghost" id="membersClose">Close</button>
+    </div>
+    <p class="members-note" id="membersNote"></p>
+    <div id="membersList" class="members-list"></div>
+  </div>
+</dialog>
+
+<script type="module" src="./js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+</script>
