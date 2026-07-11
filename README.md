@@ -1,5 +1,9 @@
 # Prayer Chain — a free, invite-only prayer app for your church ✝
 
+**▶️ [See a live demo](https://fbckjv.app/prayer-chain-template/)** &nbsp;·&nbsp;
+**⭐ Click _"Use this template"_ (top of this page) to make your own** &nbsp;·&nbsp;
+**📖 [Build Guide](./BUILD-GUIDE.md)**
+
 A small, private prayer-request and prayer-chain app you can stand up for your
 church **for free**, with no server to run and no coding required.
 

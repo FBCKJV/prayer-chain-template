@@ -102,6 +102,7 @@ body {
   border-radius: var(--radius-sm); font-size: 0.9rem;
 }
 .banner code { background: rgba(255,255,255,.08); padding: 1px 5px; border-radius: 5px; }
+.banner a { color: var(--gold-soft); font-weight: 700; }
 
 /* Auth */
 .auth {
