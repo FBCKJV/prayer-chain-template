@@ -78,15 +78,17 @@ let listData = null;         // saved list doc (null → use seed)
 let feedLoaded = false;      // has the prayers listener delivered yet?
 let members = [];             // live member directory
 let roleByUid = {};           // uid -> role ('admin' for moderators)
-let isAdmin = false;          // is the signed-in user a moderator?
+let isAdmin = false;          // is the signed-in user a moderator (admin)?
+let canEditList = false;      // may edit the Weekly Prayer List (admin or pastor)
 const openComments = new Map(); // prayerId -> { unsub, listEl }
 const expandedCards = new Set(); // prayerIds currently expanded
 
-function isModerator(uid) {
-  return roleByUid[uid] === 'admin';
-}
-function moderatorBadge() {
-  return el('span', 'mod-badge', 'Moderator');
+// A public role badge for a member (Moderator or Pastor), or null.
+function roleBadge(uid) {
+  const r = roleByUid[uid];
+  if (r === 'admin') return el('span', 'mod-badge', 'Moderator');
+  if (r === 'pastor') return el('span', 'mod-badge pastor', 'Pastor');
+  return null;
 }
 
 /* ── helpers ──────────────────────────────────────────────────────────── */
@@ -257,7 +259,7 @@ function buildCard(p) {
   const who = el('span', 'card-who');
   who.appendChild(document.createTextNode(' — '));
   const author = el('span', null, p.author || 'A member');
-  if (isModerator(p.uid)) author.appendChild(moderatorBadge());
+  { const rb = roleBadge(p.uid); if (rb) author.appendChild(rb); }
   who.appendChild(author);
   line.appendChild(who);
   summary.appendChild(line);
@@ -376,7 +378,7 @@ function renderComments(listEl, items, prayer) {
     const wrap = el('div', 'comment');
     const head = document.createElement('div');
     const author = el('span', 'comment-author', c.author || 'A member');
-    if (isModerator(c.uid)) author.appendChild(moderatorBadge());
+    { const rb = roleBadge(c.uid); if (rb) author.appendChild(rb); }
     head.appendChild(author);
     head.appendChild(el('span', 'comment-time', timeAgo(c.createdAt)));
     // Deletable by its author, the prayer's author, or a moderator.
@@ -464,7 +466,7 @@ function renderMembers() {
     const row = el('div', 'member');
     const info = el('div', 'member-info');
     const name = el('div', 'member-name', m.name || 'A member');
-    if (m.role === 'admin') name.appendChild(moderatorBadge());
+    { const rb = roleBadge(m.id); if (rb) name.appendChild(rb); }
     info.appendChild(name);
     // Names + join dates are visible to all; emails only to moderators.
     const sub = [memberJoined(m.createdAt)];
@@ -568,7 +570,7 @@ function setListMode(editing) {
   els.listBody.hidden = editing;
   els.listMeta.hidden = editing;
   els.listEditor.hidden = !editing;
-  els.listEdit.hidden = editing || !isAdmin;
+  els.listEdit.hidden = editing || !canEditList;
   els.listSave.hidden = !editing;
   els.listCancel.hidden = !editing;
   showError(els.listError, '');
@@ -735,6 +737,7 @@ async function showFeedView() {
   if (!prof && lastErr) { feedProblem(lastErr, 'We couldn’t confirm your membership.'); return; }
 
   isAdmin = !!(prof && prof.role === 'admin');
+  canEditList = isAdmin || (prof && prof.role === 'pastor');
   setupNotifications(user.uid);
   try {
     if (!unsubPrayers) {
@@ -749,8 +752,10 @@ async function showFeedView() {
           members = list;
           roleByUid = {};
           for (const m of list) roleByUid[m.id] = m.role;
-          // A moderator's role could change live; keep our own flag in sync.
+          // A member's role could change live; keep our own flags in sync.
           isAdmin = roleByUid[user.uid] === 'admin';
+          canEditList = isAdmin || roleByUid[user.uid] === 'pastor';
+          if (!els.listView.hidden) setListMode(!els.listEditor.hidden);
           renderFeed();
           if (els.membersDialog.open) renderMembers();
         },
@@ -791,6 +796,7 @@ async function boot() {
         members = [];
         roleByUid = {};
         isAdmin = false;
+        canEditList = false;
         els.authSubmit.disabled = false;
         setMode(mode);
         showAuthView();

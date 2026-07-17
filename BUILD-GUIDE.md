@@ -124,6 +124,15 @@ and your invite code. ~10 minutes, all clicking.
    - Reload the app. You'll see a **Moderator** badge and an **Edit** button on the
      📋 Prayer List. Repeat for anyone else you want as a moderator.
 
+   **Two roles you can give (both set the same way — the `role` field):**
+   - `admin` → **Moderator**: full powers — edit the prayer list, delete any
+     post/comment, and remove members.
+   - `pastor` → **Pastor**: can **edit the Weekly Prayer List** (and wears a
+     Pastor badge), but not the other moderator powers. Handy for a pastor who
+     should keep the list current without full moderation duties.
+
+   To appoint a pastor, do the same as above but set `role` = `pastor`.
+
 ✅ **You now have a complete, private prayer app for your church.** You can stop
 here and start inviting people (share the app link + the invite code). Everything
 below is optional polish.
@@ -238,6 +247,8 @@ the app is in regular use — not needed to get started.
 - **Invite someone:** share the app link + the invite code.
 - **Change the invite code:** Firebase → Firestore → `config/invite` → edit `code`.
 - **Add a moderator:** set `role: admin` on their `users` document (Part 4·4).
+- **Add a pastor (can edit the list only):** set `role: pastor` on their `users`
+  document, the same way.
 - **Remove someone:** open the app as a moderator → **⋯ → Members → Remove**
   (and, to fully delete their login, Firebase → Authentication → Users).
 - **Edit the Weekly Prayer List:** open **📋 Prayer List** in the app → **Edit**.
