@@ -47,6 +47,8 @@ const els = {
   listView: $('#listView'),
   listBack: $('#listBack'),
   listEdit: $('#listEdit'),
+  listPrint: $('#listPrint'),
+  printArea: $('#printArea'),
   listSave: $('#listSave'),
   listCancel: $('#listCancel'),
   listBody: $('#listBody'),
@@ -573,7 +575,65 @@ function setListMode(editing) {
   els.listEdit.hidden = editing || !canEditList;
   els.listSave.hidden = !editing;
   els.listCancel.hidden = !editing;
+  els.listPrint.hidden = editing;
   showError(els.listError, '');
+}
+
+// Printable Weekly Prayer List — landscape, two half-page panels. Both pages
+// print A|B; with double-sided "flip on long edge" and a cut down the middle,
+// each half becomes a two-sided prayer sheet (Panel A front / Panel B back).
+const PRINT_VERSE_REF = 'Philippians 4:6';
+const PRINT_VERSE = 'Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.';
+const PANEL_A_CATS = ['The Lost', 'Praise', 'Health'];
+const PANEL_B_CATS = ['Government', 'Church', 'Missionaries', 'Unspoken', 'Other'];
+
+function printCatLine(cat, sections) {
+  const items = String(sections[cat] || '').split('\n').map((s) => s.trim()).filter(Boolean);
+  const label = cat === 'Other' ? 'Other requests:' : cat + ':';
+  const p = el('p', 'pp-cat');
+  p.appendChild(el('strong', null, label + ' '));
+  if (items.length) p.appendChild(document.createTextNode(items.join('  -  ')));
+  return p;
+}
+
+function buildPanel(cats, sections, withHeader) {
+  const panel = el('div', 'pp-panel');
+  const wm = document.createElement('img');
+  wm.className = 'pp-wm'; wm.src = './assets/logo-display.png'; wm.alt = '';
+  panel.appendChild(wm);
+  const content = el('div', 'pp-content');
+  if (withHeader) {
+    const v = el('p', 'pp-verse');
+    v.appendChild(el('strong', null, PRINT_VERSE_REF + ' — '));
+    v.appendChild(document.createTextNode(PRINT_VERSE));
+    content.appendChild(v);
+    content.appendChild(el('p', 'pp-date', 'Date: ___ / ___ / _____'));
+  }
+  for (const cat of cats) content.appendChild(printCatLine(cat, sections));
+  panel.appendChild(content);
+  // Write-in lines that auto-fill the rest of the panel (overflow clipped).
+  const fill = el('div', 'pp-fill');
+  for (let i = 0; i < 40; i++) fill.appendChild(el('div', 'pp-line'));
+  panel.appendChild(fill);
+  return panel;
+}
+
+function buildSheet(leftCats, leftHeader, rightCats, rightHeader, sections) {
+  const s = el('div', 'pp-sheet');
+  s.appendChild(buildPanel(leftCats, sections, leftHeader));
+  s.appendChild(el('div', 'pp-divider'));
+  s.appendChild(buildPanel(rightCats, sections, rightHeader));
+  return s;
+}
+
+function printPrayerList() {
+  const sections = currentSections();
+  els.printArea.innerHTML = '';
+  // Both pages A|B; long-edge duplex mirrors the back, so each cut half ends
+  // up A (front) / B (back).
+  els.printArea.appendChild(buildSheet(PANEL_A_CATS, true, PANEL_B_CATS, false, sections));
+  els.printArea.appendChild(buildSheet(PANEL_A_CATS, true, PANEL_B_CATS, false, sections));
+  window.print();
 }
 
 function showListView() {
@@ -602,6 +662,7 @@ function leaveListView() {
 
 els.listNavBtn.addEventListener('click', () => { closeMenu(); showListView(); });
 els.listBack.addEventListener('click', () => leaveListView());
+els.listPrint.addEventListener('click', printPrayerList);
 els.listEdit.addEventListener('click', () => { renderListEditor(); setListMode(true); });
 els.listCancel.addEventListener('click', () => { renderListRead(); setListMode(false); });
 els.listSave.addEventListener('click', async () => {

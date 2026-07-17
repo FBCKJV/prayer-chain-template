@@ -11,7 +11,7 @@ try {
 
 // Bump this version string (v1 → v2 → …) whenever you change files, so
 // members' phones fetch the update on next open.
-const CACHE = 'prayer-chain-v3';
+const CACHE = 'prayer-chain-v4';
 const SHELL = [
   './',
   './index.html',

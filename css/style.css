@@ -316,4 +316,40 @@ body {
 }
 .ios-help b { color: var(--gold-soft); }
 
+/* ── Printable Weekly Prayer List ──────────────────────────────────────
+   Landscape 8.5x11 split into two half-page panels. Printed double-sided
+   (flip on long edge) and cut down the middle, each sheet yields two identical
+   two-sided half-page prayer sheets (Panel A = verse/Lost/Praise/Health,
+   Panel B = Government/Church/Missionaries/Unspoken/Other). Both pages A|B. */
+#printArea { display: none; }
+@media print {
+  @page { size: letter landscape; margin: 0.3in; }
+  html, body { background: #fff !important; }
+  body > *:not(#printArea) { display: none !important; }
+  #printArea { display: block !important; }
+
+  .pp-sheet {
+    box-sizing: border-box; display: flex; width: 100%; height: 7.7in;
+    page-break-after: always; color: #000;
+    font-family: Arial, Helvetica, "Segoe UI", sans-serif;
+  }
+  .pp-sheet:last-child { page-break-after: auto; }
+  .pp-divider { flex: 0 0 auto; border-left: 1px dashed #999; margin: 0 0.25in; }
+  .pp-panel {
+    flex: 1 1 0; min-width: 0; padding: 0 0.2in; position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .pp-content { position: relative; z-index: 1; flex: 0 0 auto; }
+  .pp-fill { position: relative; z-index: 1; flex: 1 1 auto; min-height: 0; overflow: hidden; margin-top: 4pt; }
+  .pp-line { border-bottom: 1px solid #555; height: 22pt; }
+  .pp-wm {
+    position: absolute; top: 46%; left: 50%; width: 3.1in; height: 3.1in;
+    transform: translate(-50%, -50%); opacity: 0.06; z-index: 0;
+  }
+  .pp-verse { font-size: 9.5pt; font-style: italic; line-height: 1.25; margin: 0 0 6pt; }
+  .pp-verse strong { font-style: normal; }
+  .pp-date { font-size: 12pt; font-weight: 700; text-align: right; margin: 0 0 8pt; }
+  .pp-cat { font-size: 11pt; line-height: 1.32; margin: 0 0 6pt; overflow-wrap: anywhere; }
+}
+
 [hidden] { display: none !important; }
