@@ -256,10 +256,10 @@ the app is in regular use — not needed to get started.
 - **Edit the Weekly Prayer List:** open **📋 Prayer List** in the app → **Edit**.
 - **Print the Weekly Prayer List:** open **📋 Prayer List** → **🖨️ Print**. It
   makes a landscape, two-panel sheet (with a verse, date line, and write-in
-  lines that auto-fill the page). Print **double-sided, flip on long edge**, then
+  lines that auto-fill the page). Print **double-sided, flip on short edge**, then
   cut down the middle — each sheet becomes two identical two-sided half-page
-  prayer sheets. (If front/back don't line up, switch the duplex option to short
-  edge.) Best from a computer; on a phone use Print → Save as PDF.
+  prayer sheets. (Printers vary — if front/back don't line up, switch the duplex
+  option to long edge.) Best from a computer; on a phone use Print → Save as PDF.
 
 Questions or stuck? Paste what you see into Claude Code (Part 2) and it'll help.
 God bless the ministry this serves. ✝
