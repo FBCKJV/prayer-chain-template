@@ -37,6 +37,14 @@ function initOneSignal() {
           serviceWorkerParam: { scope: base },
           serviceWorkerPath: (base + 'sw.js').replace(/^\//, ''), // relative to site root
         });
+        // Self-heal: if the browser already granted permission but the push
+        // subscription isn't opted in, opt it in now — otherwise sends can
+        // report "all included players are not subscribed" and nothing arrives.
+        try {
+          if (OneSignal.Notifications.permission) {
+            await OneSignal.User.PushSubscription.optIn();
+          }
+        } catch (_) { /* subscription not ready yet — harmless */ }
         resolve(OneSignal);
       } catch (e) {
         console.warn('[notify] OneSignal init failed', e);
@@ -81,7 +89,13 @@ export async function promptEnable() {
   if (!OneSignal) return false;
   try {
     await OneSignal.Notifications.requestPermission();
-    return OneSignal.Notifications.permission === true;
+    // Browser permission alone doesn't subscribe the device — explicitly opt
+    // the push subscription in, or sends won't reach it.
+    if (OneSignal.Notifications.permission) {
+      try { await OneSignal.User.PushSubscription.optIn(); } catch (_) {}
+    }
+    return OneSignal.Notifications.permission === true
+      && !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
   } catch { return false; }
 }
 

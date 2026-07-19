@@ -2,9 +2,12 @@
 import * as store from './store.js';
 import * as notify from './notify.js';
 import { LIST_SECTIONS, LIST_SEED } from './prayer-list-seed.js';
-import { CHURCH_NAME, APP_NAME } from './site-config.js';
+import { CHURCH_NAME, APP_NAME, CHURCH_ADDRESS } from './site-config.js';
 
 const $ = (sel) => document.querySelector(sel);
+
+// Bump this when you deploy a notable change (shown in the About dialog).
+const APP_VERSION = '1.0';
 
 // Apply the church's name/title from site-config.js (one place to edit).
 (function applyBranding() {
@@ -43,6 +46,14 @@ const els = {
   notifyMenuBtn: $('#notifyMenuBtn'),
   menuBtn: $('#menuBtn'),
   menu: $('#menu'),
+  aboutBtn: $('#aboutBtn'),
+  aboutDialog: $('#aboutDialog'),
+  aboutClose: $('#aboutClose'),
+  aboutTitle: $('#aboutTitle'),
+  aboutVer: $('#aboutVer'),
+  aboutUrl: $('#aboutUrl'),
+  aboutQr: $('#aboutQr'),
+  aboutFooter: $('#aboutFooter'),
   listNavBtn: $('#listNavBtn'),
   listView: $('#listView'),
   listBack: $('#listBack'),
@@ -519,6 +530,61 @@ els.membersBtn.addEventListener('click', () => {
 });
 els.membersClose.addEventListener('click', () => els.membersDialog.close());
 
+/* ── about / help ─────────────────────────────────────────────────────── */
+
+// The app's own URL (adapts to wherever the church hosts it).
+function appUrl() {
+  return new URL('.', location.href).href;
+}
+
+// Render a QR for the app URL into #aboutQr. Uses a tiny QR library loaded from
+// a CDN; if it can't load (e.g. offline), we simply show the URL text instead.
+let qrLibPromise = null;
+function loadQrLib() {
+  if (window.qrcode) return Promise.resolve(window.qrcode);
+  if (qrLibPromise) return qrLibPromise;
+  qrLibPromise = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+    s.onload = () => resolve(window.qrcode || null);
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+  return qrLibPromise;
+}
+async function renderQr(url) {
+  els.aboutQr.innerHTML = '';
+  const qrcode = await loadQrLib();
+  if (!qrcode) return; // offline / blocked — the URL text still shows
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    els.aboutQr.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  } catch (_) { /* leave empty */ }
+}
+
+els.aboutBtn.addEventListener('click', () => {
+  closeMenu();
+  const url = appUrl();
+  els.aboutTitle.textContent = APP_NAME;
+  els.aboutVer.textContent = 'Version ' + APP_VERSION;
+  els.aboutUrl.textContent = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  els.aboutFooter.innerHTML = '';
+  if (CHURCH_NAME) {
+    const b = document.createElement('b');
+    b.textContent = CHURCH_NAME;
+    els.aboutFooter.appendChild(b);
+  }
+  if (CHURCH_ADDRESS) {
+    if (CHURCH_NAME) els.aboutFooter.appendChild(document.createElement('br'));
+    els.aboutFooter.appendChild(document.createTextNode(CHURCH_ADDRESS));
+  }
+  renderQr(url);
+  if (typeof els.aboutDialog.showModal === 'function') els.aboutDialog.showModal();
+});
+els.aboutClose.addEventListener('click', () => els.aboutDialog.close());
+
 /* ── weekly prayer list ───────────────────────────────────────────────── */
 
 function currentSections() {
@@ -849,6 +915,7 @@ async function boot() {
         if (unsubList) { unsubList(); unsubList = null; }
         for (const id of [...openComments.keys()]) closeComments(id);
         if (els.membersDialog.open) els.membersDialog.close();
+        if (els.aboutDialog.open) els.aboutDialog.close();
         els.listView.hidden = true;
         listData = null;
         els.notifyBar.hidden = true;

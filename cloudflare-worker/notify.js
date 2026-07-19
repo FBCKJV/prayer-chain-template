@@ -61,7 +61,10 @@ export default {
 
     const notification = {
       app_id: env.ONESIGNAL_APP_ID,
-      included_segments: ['Subscribed Users'],
+      // "Total Subscriptions" is the default all-subscribers segment in current
+      // OneSignal accounts. (Older accounts used "Subscribed Users".) Override
+      // with an ONESIGNAL_SEGMENT variable if your account names it differently.
+      included_segments: [env.ONESIGNAL_SEGMENT || 'Total Subscriptions'],
       headings: { en: copy.heading },
       contents: { en: copy.content },
       url: url || env.APP_URL || undefined,

@@ -143,8 +143,10 @@ below is optional polish.
 
 All optional — the app works great as-is with a neutral church logo.
 
-- **Church name:** edit `js/site-config.js` → set `CHURCH_NAME` → Commit. This
-  updates the header and sign-in screen.
+- **Church name & address:** edit `js/site-config.js` → set `CHURCH_NAME` (and,
+  optionally, `CHURCH_ADDRESS`) → Commit. The name shows in the header and
+  sign-in screen; both appear in the **About** dialog (⋯ menu → About & help),
+  which also shows a share QR code for your app link and printing instructions.
 - **Installed app name** (what shows under the icon on a phone): edit
   `manifest.json` → `name` and `short_name` → Commit.
 - **Your logo:** replace these images in your repo with your own (keep the same
