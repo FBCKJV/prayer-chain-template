@@ -255,9 +255,12 @@ the app is in regular use — not needed to get started.
   sign-in screen and follow the emailed link. Don't "Remove" them for this — that
   only revokes access and blocks re-registering with the same email.
 - **Remove someone:** open the app as a moderator → **⋯ → Members → Remove**.
-  This cuts their access but keeps their login, so the email can't be reused. To
-  free the email for a fresh sign-up, also delete the login in Firebase →
-  Authentication → Users.
+  This revokes their access but keeps their record — they show up under a
+  **Removed** heading in the same dialog.
+- **Restore someone:** **⋯ → Members**, find them under **Removed**, tap
+  **Restore**. Their access comes back; they sign in with their old password (or
+  use **Forgot your password?** if they’ve forgotten it). Only if you want to
+  erase them for good do you delete the login in Firebase → Authentication → Users.
 - **Edit the Weekly Prayer List:** open **📋 Prayer List** in the app → **Edit**.
 - **Print the Weekly Prayer List:** open **📋 Prayer List** → **🖨️ Print**. It
   makes a landscape, two-panel sheet (with a verse, date line, and write-in
