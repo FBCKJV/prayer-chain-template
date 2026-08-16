@@ -251,8 +251,13 @@ the app is in regular use — not needed to get started.
 - **Add a moderator:** set `role: admin` on their `users` document (Part 4·4).
 - **Add a pastor (can edit the list only):** set `role: pastor` on their `users`
   document, the same way.
-- **Remove someone:** open the app as a moderator → **⋯ → Members → Remove**
-  (and, to fully delete their login, Firebase → Authentication → Users).
+- **Someone forgot their password:** they tap **Forgot your password?** on the
+  sign-in screen and follow the emailed link. Don't "Remove" them for this — that
+  only revokes access and blocks re-registering with the same email.
+- **Remove someone:** open the app as a moderator → **⋯ → Members → Remove**.
+  This cuts their access but keeps their login, so the email can't be reused. To
+  free the email for a fresh sign-up, also delete the login in Firebase →
+  Authentication → Users.
 - **Edit the Weekly Prayer List:** open **📋 Prayer List** in the app → **Edit**.
 - **Print the Weekly Prayer List:** open **📋 Prayer List** → **🖨️ Print**. It
   makes a landscape, two-panel sheet (with a verse, date line, and write-in
