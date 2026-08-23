@@ -342,7 +342,9 @@ function buildCard(p) {
   const commentToggle = el('button', 'link-btn');
   commentToggle.type = 'button';
   const cc = p.commentCount || 0;
-  commentToggle.textContent = cc ? `💬 Updates (${cc})` : '💬 Add update';
+  // Your own post: you "add an update". Someone else's: you "leave encouragement".
+  const emptyLabel = mine ? '💬 Add update' : '💬 Leave encouragement';
+  commentToggle.textContent = cc ? `💬 Updates (${cc})` : emptyLabel;
   commentToggle.addEventListener('click', () => toggleComments(p, card));
   actions.appendChild(commentToggle);
 
