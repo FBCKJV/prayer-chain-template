@@ -99,6 +99,7 @@ let isAdmin = false;          // is the signed-in user a moderator (admin)?
 let canEditList = false;      // may edit the Weekly Prayer List (admin or pastor)
 const openComments = new Map(); // prayerId -> { unsub, listEl }
 const expandedCards = new Set(); // prayerIds currently expanded
+const autoExpandedIds = new Set(); // newest cards we've already auto-opened once
 
 // A public role badge for a member (Moderator or Pastor), or null.
 function roleBadge(uid) {
@@ -985,7 +986,20 @@ async function showFeedView() {
   try {
     if (!unsubPrayers) {
       unsubPrayers = await store.watchPrayers(
-        (items) => { feedLoaded = true; prayers = items; renderFeed(); },
+        (items) => {
+          feedLoaded = true;
+          prayers = items;
+          // Auto-expand the newest request (once). If the reader collapses it,
+          // it stays collapsed; a brand-new post becomes the newest and opens.
+          if (items.length) {
+            const newestId = items[0].id;
+            if (!autoExpandedIds.has(newestId)) {
+              autoExpandedIds.add(newestId);
+              expandedCards.add(newestId);
+            }
+          }
+          renderFeed();
+        },
         (err) => feedProblem(err, 'Couldn’t load the prayer chain.')
       );
     }
