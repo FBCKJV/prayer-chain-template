@@ -22,11 +22,20 @@ Built to be quiet and low-drama by design:
 It's a plain static website (HTML/CSS/JavaScript, no build step) backed by
 **Firebase** (Google's free database + login). It runs entirely on free tiers.
 
-## 👉 Start here: [BUILD-GUIDE.md](./BUILD-GUIDE.md)
+## 👉 Two ways to set it up — pick one
 
-That guide walks you from zero — creating accounts, putting the app online,
-connecting Firebase, and **testing a fully working app** — before you ever touch
-the optional notification setup. Plan about an hour. No credit card, no coding.
+**🟢 Easiest — let Claude walk you through it: [SETUP-WITH-CLAUDE.md](./SETUP-WITH-CLAUDE.md)**
+Open this project in [Claude Code](https://claude.ai/code) and say *"Please set
+me up — follow SETUP-WITH-CLAUDE.md and be my guide."* Claude asks simple
+questions about your church (name, colors, logo, your prayer list), makes all
+the code changes for you, and coaches you through the click-through parts. Best
+if you're not technical.
+
+**📖 By hand: [BUILD-GUIDE.md](./BUILD-GUIDE.md)**
+The same setup as a detailed, do-it-yourself walkthrough — creating accounts,
+putting the app online, connecting Firebase, and **testing a fully working
+app** — before you ever touch the optional notification setup. Plan about an
+hour. No credit card, no coding either way.
 
 ## What you'll touch (the only files you normally edit)
 
