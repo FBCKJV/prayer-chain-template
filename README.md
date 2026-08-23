@@ -37,6 +37,31 @@ putting the app online, connecting Firebase, and **testing a fully working
 app** — before you ever touch the optional notification setup. Plan about an
 hour. No credit card, no coding either way.
 
+---
+
+### 🤝 Sharing this with another church? (for whoever's passing it on)
+
+If you already run this and you're setting up a friend at another church, here's
+the short version of what to hand them:
+
+1. **Give them their own copy.** On this repo's GitHub page, have them click
+   **"Use this template" → Create a new repository** under *their* account (not
+   yours). That gives them a clean copy they own. If they'd rather you drive,
+   create it and add them as a collaborator (repo **Settings → Collaborators**).
+2. **Tell them to open it in [Claude Code](https://claude.ai/code)** and paste:
+   *"Please set me up — follow SETUP-WITH-CLAUDE.md and be my guide, one step at
+   a time. I'm not technical."* Claude takes it from there.
+3. **Have them gather three things first** so the interview goes smoothly:
+   their **logo** image, their **current weekly prayer list** (PDF, doc, photo,
+   or typed), and a **brand color** if they have one.
+4. **Warn them about the one recurring gotcha:** every time Claude has them
+   paste `firestore.rules` into Firebase, they must click **Publish**, or the
+   app will say *permission-denied*.
+5. They'll need free **Google/Firebase** and **GitHub** accounts — no credit
+   card. Budget about an hour together the first time.
+
+That's it — the app code and the how-to travel with the repo.
+
 ## What you'll touch (the only files you normally edit)
 
 | File | What it's for |
