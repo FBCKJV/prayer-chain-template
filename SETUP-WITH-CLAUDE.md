@@ -113,9 +113,10 @@ new version. Then commit (and push, if their repo is connected).
 
 **Names →**
 - `js/site-config.js`: set `CHURCH_NAME`, `APP_NAME`, and `CHURCH_ADDRESS`
-  (use `\n` for line breaks; leave `''` to hide it).
+  (use `\n` for line breaks; leave `''` to hide it). The browser-tab title is
+  set automatically from `APP_NAME` at runtime — you do **not** need to edit the
+  `<title>` in `index.html`.
 - `manifest.json`: set `"name"` and `"short_name"` (the home-screen label).
-- `index.html`: the `<title>` if it names the app.
 
 **Colors →** edit the `:root` block in `css/style.css`. The app is light-only,
 so this one block is the whole theme. The key variables:
@@ -133,11 +134,13 @@ so this one block is the whole theme. The key variables:
 - `assets/logo-display.png` — the header logo (a clean, roughly square PNG).
 - `assets/icons/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`,
   `apple-touch-icon.png`, `favicon-32.png` — the home-screen/tab icons.
-Use whatever image tooling is available in the environment (ImageMagick's
-`convert`/`magick`, or Python with Pillow) to resize/pad to square. If none is
-available, or the result looks poor, tell them plainly and either keep the
-default icons for now or point them to a free favicon generator and have them
-drop the files in. Don't pretend an icon was generated if it wasn't.
+A **real logo they upload is strongly preferred** — a generated placeholder is
+only a fallback. Use whatever image tooling is available (ImageMagick's
+`convert`/`magick`, or Python with Pillow — you may need to `pip install
+Pillow` first) to resize/pad each file to square. If you can't install anything
+or the result looks poor, tell them plainly and either keep the default icons
+for now or point them to a free favicon generator and have them drop the files
+in. Don't pretend an icon was generated if it wasn't.
 
 **Prayer list →** `js/prayer-list-seed.js`:
 - Set `LIST_SECTIONS` to their confirmed section headings, in the order they
