@@ -15,7 +15,9 @@ Built to be quiet and low-drama by design:
   hand out the code; you can change it any time.
 - **Newest first**, updating live on everyone's devices.
 - **Installable** on phones ("Add to Home Screen") — opens like a real app.
-- **Weekly Prayer List** — a standing, categorized page moderators can edit.
+- **Weekly Prayer List** — a standing, categorized page moderators can edit, and
+  print as a double-sided half-sheet for services
+  ([sample PDF](./assets/sample-weekly-prayer-list.pdf)).
 - **Open moderation** — moderators wear a visible badge; nothing is done in secret.
 - **Optional push notifications** for new and answered prayers.
 

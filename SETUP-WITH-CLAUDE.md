@@ -155,6 +155,9 @@ in. Don't pretend an icon was generated if it wasn't.
   sections opposite several short ones). Every section in `LIST_SECTIONS`
   should appear in exactly one panel.
 - `PRINT_VERSE_REF` and `PRINT_VERSE` — their chosen verse.
+- For a picture of the finished printout, see
+  `assets/sample-weekly-prayer-list.pdf` — that's the balanced two-panel sheet
+  you're aiming to reproduce with their categories.
 
 **After editing:** briefly summarize what you changed in plain terms, bump the
 `sw.js` cache, and commit. If you can push, do; otherwise tell them it's saved

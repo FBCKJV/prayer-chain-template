@@ -104,9 +104,16 @@ and your invite code. ~10 minutes, all clicking.
 **Goal:** a real, working prayer app you and a friend can use.
 
 1. **Paste your Firebase config:** in your GitHub repo, open
-   `js/firebase-config.js`, click the **pencil (Edit)** icon. Replace the six
-   `PASTE_…` values with the matching values from the Firebase tab you left open.
-   Click **Commit changes**.
+   `js/firebase-config.js`, click the **pencil (Edit)** icon. The field names in
+   this file (`apiKey`, `authDomain`, `projectId`, …) are **exactly the same**
+   as the ones Firebase shows you — so the easiest, safest way is to **replace
+   the whole `firebaseConfig = { … }` block** with the one from your Firebase tab
+   (keep the `export const` in front of it, and the semicolon after). Or replace
+   the six `PASTE_…` values one at a time, matching by name. Click **Commit
+   changes**.
+
+   > **Where to find the config again later:** Firebase → ⚙️ **Project settings**
+   > → scroll to **Your apps** → your Web app → **SDK setup and configuration**.
 2. Wait 1–2 minutes, then reload your app URL. **The red banner should be gone.**
 3. **Test everything:**
    - Tap **Join** → enter your name, email, a password, and your **invite code** →
@@ -136,6 +143,23 @@ and your invite code. ~10 minutes, all clicking.
 ✅ **You now have a complete, private prayer app for your church.** You can stop
 here and start inviting people (share the app link + the invite code). Everything
 below is optional polish.
+
+### If something isn't working (the four common snags)
+
+- **"We couldn't confirm your membership" / permission-denied.** The security
+  rules aren't published. Firebase → **Firestore → Rules** → paste all of
+  `firestore.rules` → **Publish**. This is the #1 cause — it happens any time
+  the rules change and aren't re-published.
+- **Red "connect Firebase" banner won't go away.** Either the config in
+  `js/firebase-config.js` still has `PASTE_…` values, or GitHub Pages hasn't
+  rebuilt yet (wait 1–2 min and hard-refresh). Double-check you committed the
+  file.
+- **"That invite code is not valid" when joining.** The `config/invite` document
+  is missing or the code doesn't match. Check Firebase → **Firestore → Data** →
+  `config` → `invite` → the `code` field equals what you're typing (exact case).
+  The document ID must be exactly `invite` (not an auto-generated ID).
+- **A change to the app didn't show up.** Bump `CACHE` in `sw.js` (e.g. `v12` →
+  `v13`), commit, then fully close and reopen the app.
 
 ---
 
@@ -268,6 +292,8 @@ the app is in regular use — not needed to get started.
   cut down the middle — each sheet becomes two identical two-sided half-page
   prayer sheets. (Printers vary — if front/back don't line up, switch the duplex
   option to long edge.) Best from a computer; on a phone use Print → Save as PDF.
+  **See what it looks like:** [`assets/sample-weekly-prayer-list.pdf`](./assets/sample-weekly-prayer-list.pdf)
+  is a filled-in example.
 
 Questions or stuck? Paste what you see into Claude Code (Part 2) and it'll help.
 God bless the ministry this serves. ✝
