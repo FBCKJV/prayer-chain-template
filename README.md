@@ -1,7 +1,8 @@
 # Prayer Chain — a free, invite-only prayer app for your church ✝
 
-**▶️ [See a live demo](https://fbckjv.app/prayer-chain-template/)** &nbsp;·&nbsp;
-**⭐ Click _"Use this template"_ (top of this page) to make your own** &nbsp;·&nbsp;
+**▶️ [Live demo](https://fbckjv.app/prayer-chain-template/)** &nbsp;·&nbsp;
+**⭐ _"Use this template"_ (top of this page) to make your own** &nbsp;·&nbsp;
+**🟢 [Set up with Claude](./SETUP-WITH-CLAUDE.md)** &nbsp;·&nbsp;
 **📖 [Build Guide](./BUILD-GUIDE.md)**
 
 A small, private prayer-request and prayer-chain app you can stand up for your
@@ -68,7 +69,7 @@ That's it — the app code and the how-to travel with the repo.
 
 | File | What it's for |
 |------|----------------|
-| `js/site-config.js` | Your church's name |
+| `js/site-config.js` | Your church's name, app name & address |
 | `js/firebase-config.js` | Connects the app to your Firebase project |
 | `firestore.rules` | Security rules you paste into Firebase (as-is) |
 | `manifest.json` | The app's name on a phone's home screen (optional) |
@@ -89,7 +90,7 @@ sure only members can read or write anything. No Cloud Functions, no billing.
 
 ## Want help customizing?
 
-This whole app was built by chatting with **Claude Code** (https://claude.ai/code)
-in plain English. You can point it at your copy of this repo to change colors,
-add features, swap in your logo, or troubleshoot — no coding needed. See Part 2
-of the build guide.
+Point **Claude Code** (https://claude.ai/code) at your copy anytime to change
+colors, add features, swap in your logo, or troubleshoot — in plain English, no
+coding. (It's also the [easiest way to set up](./SETUP-WITH-CLAUDE.md) in the
+first place.)

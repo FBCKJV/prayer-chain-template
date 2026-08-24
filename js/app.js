@@ -763,8 +763,9 @@ function setListMode(editing) {
 }
 
 // Printable Weekly Prayer List — landscape, two half-page panels. Both pages
-// print A|B; with double-sided "flip on long edge" and a cut down the middle,
+// print A|B; printed double-sided (flip on short edge) and cut down the middle,
 // each half becomes a two-sided prayer sheet (Panel A front / Panel B back).
+// (Printers vary — long-edge is the fallback if the sides don't line up.)
 const PRINT_VERSE_REF = 'Philippians 4:6';
 const PRINT_VERSE = 'Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.';
 const PANEL_A_CATS = ['The Lost', 'Praise', 'Health'];
@@ -812,8 +813,8 @@ function buildSheet(leftCats, leftHeader, rightCats, rightHeader, sections) {
 function printPrayerList() {
   const sections = currentSections();
   els.printArea.innerHTML = '';
-  // Both pages A|B; long-edge duplex mirrors the back, so each cut half ends
-  // up A (front) / B (back).
+  // Both pages print the same A|B; short-edge duplex lines the back up with the
+  // front, so each cut half ends up Panel A (front) / Panel B (back).
   els.printArea.appendChild(buildSheet(PANEL_A_CATS, true, PANEL_B_CATS, false, sections));
   els.printArea.appendChild(buildSheet(PANEL_A_CATS, true, PANEL_B_CATS, false, sections));
   window.print();
