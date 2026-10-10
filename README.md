@@ -20,7 +20,14 @@ Built to be quiet and low-drama by design:
   print as a double-sided half-sheet for services
   ([sample PDF](./assets/sample-weekly-prayer-list.pdf)).
 - **Open moderation** — moderators wear a visible badge; nothing is done in secret.
-- **Optional push notifications** for new and answered prayers.
+- **📣 Church messages** — a Messages tab where church leaders (pastor, deacons,
+  secretary, moderators) post news for everyone; members reply with a 👍. A
+  message can also **add its date to the calendar** in the same step.
+- **📅 Church calendar** — month view + "Coming up" list, repeating dates (every
+  week, every other week, monthly), and quiet "save the date" entries such as
+  birthdays that don't send an alert.
+- **Optional push notifications** for new and answered prayers and church
+  messages — held overnight (8 PM–8 AM) so nobody's phone buzzes at 2 AM.
 
 It's a plain static website (HTML/CSS/JavaScript, no build step) backed by
 **Firebase** (Google's free database + login). It runs entirely on free tiers.

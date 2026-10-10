@@ -31,12 +31,19 @@ they'd like you to walk them through setup one step at a time.
 - `js/site-config.js` — church name, app name, address (start here for branding).
 - `css/style.css` `:root` block — the whole color theme (app is light-only).
 - `js/prayer-list-seed.js` — the Weekly Prayer List sections/entries.
-- `js/app.js` — `PANEL_A_CATS` / `PANEL_B_CATS` (print sheet split) and
-  `PRINT_VERSE` / `PRINT_VERSE_REF`.
+- `js/app.js` — `PANEL_A_CATS` / `PANEL_B_CATS` (print sheet split),
+  `PRINT_VERSE` / `PRINT_VERSE_REF`, `PRINT_LIST_DAY` (dates the PDF name), and
+  `LEADER_ROLES` (who may post messages / manage the calendar — must match
+  `isEditor()` in `firestore.rules` and `LEADER_ROLES` in the Worker).
 - `js/firebase-config.js` — their Firebase keys (they paste; you fill in).
 - `firestore.rules` — security rules; **they must Publish these in the Firebase
   console after any change**, or writes fail with `permission-denied`.
-- `manifest.json`, `assets/` (logo + icons), `sw.js` (offline cache).
+- `manifest.json`, `assets/` (logo + icons — home-screen icons are
+  `assets/icons/app-icon-192.png` / `app-icon-512.png`, solid squares),
+  `sw.js` (offline cache).
+- `cloudflare-worker/notify.js` — push relay (OneSignal secret, quiet hours
+  8 PM–8 AM in `CHURCH_TZ`). **They must re-paste it in Cloudflare after any
+  change.**
 - `BUILD-GUIDE.md` — the detailed click-through for the console steps.
 
 ## "Is it set up yet?" quick check

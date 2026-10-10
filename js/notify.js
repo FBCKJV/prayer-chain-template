@@ -99,9 +99,12 @@ export async function promptEnable() {
   } catch { return false; }
 }
 
-// Ask the Worker to notify everyone. type is 'new_prayer' | 'answered'.
+// Ask the Worker to notify everyone. type is 'new_prayer' | 'answered' |
+// 'announcement' | 'new_event' (the last two: pastor & moderators only).
 // The Worker builds the wording itself; we only send the token + type.
-export async function sendPush(type, url) {
+// extra: { announcementId } for 'announcement' — the Worker looks the message
+// up itself to show its title, so no text is ever taken from here.
+export async function sendPush(type, url, extra) {
   if (!NOTIFY_ENDPOINT) return;
   let idToken;
   try { idToken = await getIdToken(); } catch { return; }
@@ -110,7 +113,7 @@ export async function sendPush(type, url) {
     await fetch(NOTIFY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken, type, url: url || appUrl() }),
+      body: JSON.stringify({ idToken, type, url: url || appUrl(), ...(extra || {}) }),
       keepalive: true,
     });
   } catch (e) { /* best-effort; never block the UI */ }

@@ -7,8 +7,8 @@
  * caller is a real member, then tells OneSignal to notify everyone.
  *
  * It never trusts client-supplied text — it builds the message itself from the
- * member's name, so prayer details never leave the app and nobody can push
- * arbitrary content.
+ * member's name (and, for a church message, the title read from Firestore),
+ * so prayer details never leave the app and nobody can push arbitrary content.
  *
  * ── Deploy (all in the Cloudflare dashboard) ─────────────────────────────────
  *  1. Workers & Pages → Create → Worker. Name it e.g. "prayer-notify".
@@ -19,6 +19,7 @@
  *       FIREBASE_PROJECT_ID    = <your Firebase project id>
  *       ALLOW_ORIGIN           = <your app's URL, e.g. https://USERNAME.github.io>
  *       APP_URL                = <your app's URL, e.g. https://USERNAME.github.io/REPO/>
+ *       CHURCH_TZ              = <optional; your time zone for quiet hours, e.g. America/Chicago>
  *  4. Give it a URL — the *.workers.dev URL it shows is fine.
  *  5. Put that URL in the app at js/notify-config.js → NOTIFY_ENDPOINT.
  *  Full walkthrough: BUILD-GUIDE.md (Part 6).
@@ -37,9 +38,9 @@ export default {
     let body;
     try { body = await request.json(); } catch { return json({ error: 'bad-json' }, 400, cors); }
 
-    const { idToken, type, url } = body || {};
+    const { idToken, type, url, eventDate, announcementId } = body || {};
     if (!idToken) return json({ error: 'missing-token' }, 400, cors);
-    if (type !== 'new_prayer' && type !== 'answered') return json({ error: 'bad-type' }, 400, cors);
+    if (!COPY[type]) return json({ error: 'bad-type' }, 400, cors);
 
     // Pull the uid out of the (still-unverified) token so we can read the caller's
     // own member document. The read itself is the real check: Firestore rejects a
@@ -53,11 +54,41 @@ export default {
     if (!docRes.ok) return json({ error: 'not-a-member' }, 403, cors);
     const doc = await docRes.json().catch(() => ({}));
     const name = (doc.fields && doc.fields.name && doc.fields.name.stringValue) || 'A member';
+    const role = (doc.fields && doc.fields.role && doc.fields.role.stringValue) || '';
 
-    // Build the message server-side (never from the client).
-    const copy = type === 'answered'
-      ? { heading: '🎉 Answered prayer', content: `${name} marked a prayer answered.` }
-      : { heading: '🙏 New prayer request', content: `${name} shared a prayer request. Tap to pray.` };
+    // Church messages come only from church leaders — the same people the
+    // Firestore rules let post them.
+    if (LEADER_ONLY.includes(type) && !LEADER_ROLES.includes(role)) {
+      console.log(`[notify] leader-only type=${type} refused for uid=${uid} role=${role || 'none'}`);
+      return json({ error: 'not-a-leader' }, 403, cors);
+    }
+
+    // Build the message server-side (never from client text). For a church
+    // message we read the message itself from Firestore — with the caller's
+    // own token — and use its title only if the caller wrote it and just
+    // posted it. A calendar date is accepted only as a strict YYYY-MM-DD.
+    let title = '';
+    let date = typeof eventDate === 'string' ? eventDate : '';
+    if (type === 'announcement' && typeof announcementId === 'string' && /^[A-Za-z0-9]{1,40}$/.test(announcementId)) {
+      const annRes = await fetch(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/announcements/${announcementId}`,
+        { headers: { Authorization: `Bearer ${idToken}` } });
+      const ann = annRes.ok ? await annRes.json().catch(() => ({})) : {};
+      const f = ann.fields || {};
+      const posted = f.createdAt && f.createdAt.timestampValue ? Date.parse(f.createdAt.timestampValue) : 0;
+      if (f.uid && f.uid.stringValue === uid && Date.now() - posted < 10 * 60 * 1000) {
+        title = ((f.title && f.title.stringValue) || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        date = (f.eventDate && f.eventDate.stringValue) || '';
+      } else {
+        console.log(`[notify] announcement ${announcementId} not used (status=${annRes.status})`);
+      }
+    }
+    const when = /^\d{4}-\d{2}-\d{2}$/.test(date) ? fmtDate(new Date(date + 'T12:00:00Z'), 'UTC') : '';
+    const copy = COPY[type](name, when, title);
+
+    // Only deep-link back into our own app (e.g. …/#messages), never elsewhere.
+    const home = env.APP_URL || (env.ALLOW_ORIGIN && env.ALLOW_ORIGIN !== '*' ? env.ALLOW_ORIGIN : '');
+    const target = typeof url === 'string' && (!home || url.startsWith(new URL(home).origin))
+      ? url : (env.APP_URL || undefined);
 
     const notification = {
       app_id: env.ONESIGNAL_APP_ID,
@@ -67,13 +98,70 @@ export default {
       included_segments: [env.ONESIGNAL_SEGMENT || 'Total Subscriptions'],
       headings: { en: copy.heading },
       contents: { en: copy.content },
-      url: url || env.APP_URL || undefined,
+      url: target,
       web_push_topic: type, // collapse duplicates of the same kind
     };
+    // Quiet hours: nothing buzzes phones between 8 PM and 8 AM church time.
+    // Anything posted then is scheduled by OneSignal for 8 AM.
+    if (env.CHURCH_TZ) CHURCH_TZ = env.CHURCH_TZ;
+    const sendAt = nextAllowedTime(new Date());
+    if (sendAt) notification.send_after = sendAt.toISOString();
     const { res: osRes, data: osData } = await sendOneSignal(env.ONESIGNAL_REST_API_KEY, notification);
-    return json({ ok: osRes.ok, onesignal: osData }, osRes.ok ? 200 : 502, cors);
+    console.log(`[notify] OneSignal responded status=${osRes.status} scheduled=${sendAt ? sendAt.toISOString() : 'now'} body=${JSON.stringify(osData)}`);
+    return json({ ok: osRes.ok, scheduledFor: sendAt ? sendAt.toISOString() : null, onesignal: osData }, osRes.ok ? 200 : 502, cors);
   },
 };
+
+// Notification wording per type, built from the sender's name only.
+const COPY = {
+  new_prayer: (name) => ({ heading: '🙏 New prayer request', content: `${name} shared a prayer request. Tap to pray.` }),
+  answered: (name) => ({ heading: '🎉 Answered prayer', content: `${name} marked a prayer answered.` }),
+  // "📣 Potluck coming up Nov 1!" / "From Pastor Dan · Sun, Nov 1 · Tap to read"
+  announcement: (name, when, title) => (title
+    ? { heading: `📣 ${title}`, content: `From ${name}${when ? ' · ' + when : ''} · Tap to read` }
+    : {
+      heading: '📣 Church message',
+      content: when ? `${name} posted about an event on ${when}.` : `${name} posted a message for the church.`,
+    }),
+  new_event: (name, when) => ({
+    heading: '📅 New on the calendar',
+    content: when ? `${name} added an event on ${when}.` : `${name} added a date to the church calendar.`,
+  }),
+};
+
+// "Sun, Oct 18"
+function fmtDate(d, timeZone) {
+  return d.toLocaleDateString('en-US', { timeZone, weekday: 'short', month: 'short', day: 'numeric' });
+}
+// Types only church leaders may send, and the roles that count as leaders
+// (must match isEditor() in firestore.rules).
+const LEADER_ONLY = ['announcement', 'new_event'];
+const LEADER_ROLES = ['admin', 'pastor', 'deacon', 'secretary'];
+
+// Alerts go out only between QUIET_END and QUIET_START in the church's time
+// zone. Set a CHURCH_TZ variable on the Worker (e.g. America/Chicago,
+// America/Denver, America/Los_Angeles); Eastern time is used if it's unset.
+let CHURCH_TZ = 'America/New_York';
+const QUIET_START = 20; // 8 PM
+const QUIET_END = 8;    // 8 AM
+
+// null = send now; otherwise the Date of the next 8 AM in church time.
+function nextAllowedTime(now) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: CHURCH_TZ, hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(now).map((x) => [x.type, x.value]));
+  const hour = Number(p.hour);
+  if (hour >= QUIET_END && hour < QUIET_START) return null;
+  // Church-time offset from UTC right now (e.g. -4h in summer, -5h in winter).
+  const wall = Date.UTC(+p.year, +p.month - 1, +p.day, hour, +p.minute, +p.second);
+  const offset = wall - Math.floor(now.getTime() / 1000) * 1000;
+  const day = hour >= QUIET_START ? +p.day + 1 : +p.day; // evening → tomorrow morning
+  const at = new Date(Date.UTC(+p.year, +p.month - 1, day, QUIET_END, 0, 0) - offset);
+  // If the clocks change overnight, nudge so it still lands on 8 AM local.
+  const h = Number(new Intl.DateTimeFormat('en-US', { timeZone: CHURCH_TZ, hourCycle: 'h23', hour: '2-digit' }).format(at));
+  return new Date(at.getTime() + (QUIET_END - h) * 3600000);
+}
 
 // OneSignal changed its auth header format: newer keys use "Key <key>", older
 // REST API keys use "Basic <key>". Try the modern one first, fall back to the

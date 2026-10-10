@@ -132,8 +132,11 @@ so this one block is the whole theme. The key variables:
 
 **Logo →** from their uploaded image, produce:
 - `assets/logo-display.png` — the header logo (a clean, roughly square PNG).
-- `assets/icons/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`,
-  `apple-touch-icon.png`, `favicon-32.png` — the home-screen/tab icons.
+- `assets/icons/app-icon-192.png`, `app-icon-512.png` — the home-screen icons.
+  These must be **solid squares** (no transparency): fill the square with white
+  (or their brand color) and center their round logo at ~92% of the width, or
+  Android shrinks the icon onto a white circle. Also `apple-touch-icon.png`
+  and `favicon-32.png`.
 A **real logo they upload is strongly preferred** — a generated placeholder is
 only a fallback. Use whatever image tooling is available (ImageMagick's
 `convert`/`magick`, or Python with Pillow — you may need to `pip install
@@ -200,9 +203,11 @@ on it; you're the friendly narrator on top of it.
 
 ## Phase 4 — First moderator & going live
 
-- **Make them a moderator (pastor/admin).** In Firestore → `users` → their user
-  document → add a field `role` (text) = `admin` (full moderator) or `pastor`
-  (can edit the Weekly Prayer List only). Explain the difference; most want
+- **Make them a moderator.** In Firestore → `users` → their user document → add
+  a field `role` (text) = `admin` (full moderator). Other leaders can get
+  `pastor`, `deacon`, or `secretary` — they can edit the Weekly Prayer List, post
+  church messages and manage the calendar, but can't remove members or delete
+  others' posts. Values are **lowercase** (`Deacon` won't work). Most want
   `admin` for themselves.
 - **Invite the church.** Share the app link + the invite code. On phones,
   people can **Add to Home Screen** to install it like an app.
@@ -215,8 +220,10 @@ on it; you're the friendly narrator on top of it.
 ## Phase 5 — Optional, only when they're ready
 
 Mention these exist; don't push them during first setup.
-- **Push notifications** (new & answered prayers): BUILD-GUIDE Part 6
-  (OneSignal + a Cloudflare Worker). More involved — save for later.
+- **Push notifications** (new & answered prayers, church messages; held
+  8 PM–8 AM): BUILD-GUIDE Part 6 (OneSignal + a Cloudflare Worker). More
+  involved — save for later. Ask their time zone and have them set the Worker's
+  `CHURCH_TZ` variable if they're not on Eastern time.
 - **Their own web address** (e.g. prayer.theirchurch.org): BUILD-GUIDE "Future
   goal" section.
 
