@@ -11,7 +11,7 @@ try {
 
 // Bump this version string (v1 → v2 → …) whenever you change files, so
 // members' phones fetch the update on next open.
-const CACHE = 'prayer-chain-v12';
+const CACHE = 'prayer-chain-v13';
 const SHELL = [
   './',
   './index.html',
@@ -25,8 +25,8 @@ const SHELL = [
   './js/prayer-list-seed.js',
   './manifest.json',
   './assets/logo-display.png',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
+  './assets/icons/app-icon-192.png',
+  './assets/icons/app-icon-512.png',
   './assets/icons/apple-touch-icon.png',
 ];
 
@@ -49,9 +49,12 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== self.location.origin) return; // let Firebase & CDN hit the network
 
   if (req.mode === 'navigate') {
-    // Network-first for the page so new deploys show up promptly.
+    // Network-first for the page so new deploys show up promptly. `no-cache`
+    // makes the browser check with the server (a tiny 304 if unchanged)
+    // instead of reusing its own HTTP-cached copy — GitHub Pages allows
+    // browsers to keep files for 10 minutes, which hid fresh deploys.
     e.respondWith(
-      fetch(req).then((res) => {
+      fetch(req, { cache: 'no-cache' }).then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put('./index.html', copy));
         return res;
@@ -65,7 +68,7 @@ self.addEventListener('fetch', (e) => {
   // cache when offline. Images and other static assets stay cache-first below.
   if (/\.(?:js|css|html)$/.test(url.pathname)) {
     e.respondWith(
-      fetch(req).then((res) => {
+      fetch(req, { cache: 'no-cache' }).then((res) => {
         if (res && res.ok) {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy));

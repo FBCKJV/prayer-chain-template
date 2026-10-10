@@ -259,6 +259,179 @@ export async function deleteComment(prayerId, commentId) {
   } catch (_) {}
 }
 
+/* ── Church messages (pastor & moderators post; everyone can 👍) ─────────── */
+
+// Live message board, newest first.
+export async function watchAnnouncements(cb, onError) {
+  const { fs, db } = await init();
+  const q = fs.query(fs.collection(db, 'announcements'), fs.orderBy('createdAt', 'desc'), fs.limit(50));
+  return fs.onSnapshot(q, (snap) => {
+    cb(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  }, onError);
+}
+
+// A message can carry one calendar date ("Add to calendar"). The two docs
+// point at each other (announcement.eventId ↔ event.announcementId) and are
+// always written, edited and deleted together in one batch. The message keeps
+// its own copy of the date/time/place so Messages can show it without
+// loading the calendar.
+function eventFields(title, ev) {
+  return {
+    title: title.trim(), date: ev.date, time: ev.time || '',
+    location: (ev.location || '').trim(), notes: '', repeat: '', until: '',
+  };
+}
+function annEventFields(ev) {
+  return ev
+    ? { eventDate: ev.date, eventTime: ev.time || '', eventLocation: (ev.location || '').trim() }
+    : { eventId: '', eventDate: '', eventTime: '', eventLocation: '' };
+}
+
+// Post a message (church leaders, enforced by rules). event: optional
+// { date, time, location } to also put it on the calendar.
+export async function postAnnouncement({ title, body, event }) {
+  const { fs, db, authInst } = await init();
+  const user = authInst.currentUser;
+  const prof = await getProfile(user.uid);
+  const author = (prof && prof.name) || 'Church office';
+  const annRef = fs.doc(fs.collection(db, 'announcements'));
+  const batch = fs.writeBatch(db);
+  let eventId = '';
+  if (event) {
+    const evRef = fs.doc(fs.collection(db, 'events'));
+    eventId = evRef.id;
+    batch.set(evRef, {
+      ...eventFields(title, event), announcementId: annRef.id,
+      uid: user.uid, author, createdAt: fs.serverTimestamp(),
+    });
+  }
+  batch.set(annRef, {
+    uid: user.uid, author,
+    title: (title || '').trim(), body: body.trim(),
+    thumbsBy: [], createdAt: fs.serverTimestamp(),
+    ...annEventFields(event), eventId,
+  });
+  await batch.commit();
+  return annRef.id;
+}
+
+// Edit a message and keep its calendar date in step: add, change or remove it.
+// prevEventId: the message's current eventId ('' if none).
+export async function updateAnnouncement(id, { title, body, event }, prevEventId) {
+  const { fs, db, authInst } = await init();
+  const annRef = fs.doc(db, 'announcements', id);
+  const batch = fs.writeBatch(db);
+  let eventId = prevEventId || '';
+  if (event && eventId) {
+    batch.update(fs.doc(db, 'events', eventId), { ...eventFields(title, event), updatedAt: fs.serverTimestamp() });
+  } else if (event) {
+    const user = authInst.currentUser;
+    const prof = await getProfile(user.uid);
+    const evRef = fs.doc(fs.collection(db, 'events'));
+    eventId = evRef.id;
+    batch.set(evRef, {
+      ...eventFields(title, event), announcementId: id,
+      uid: user.uid, author: (prof && prof.name) || 'Church office', createdAt: fs.serverTimestamp(),
+    });
+  } else if (eventId) {
+    batch.delete(fs.doc(db, 'events', eventId));
+    eventId = '';
+  }
+  batch.update(annRef, {
+    title: (title || '').trim(), body: body.trim(), editedAt: fs.serverTimestamp(),
+    ...annEventFields(event), eventId,
+  });
+  await batch.commit();
+}
+
+export async function toggleThumbs(id, uid, isOn) {
+  const { fs, db } = await init();
+  await fs.updateDoc(fs.doc(db, 'announcements', id), {
+    thumbsBy: isOn ? fs.arrayRemove(uid) : fs.arrayUnion(uid),
+  });
+}
+
+// Deleting a message also removes its calendar date (and vice versa below).
+export async function deleteAnnouncement(id, eventId) {
+  const { fs, db } = await init();
+  const batch = fs.writeBatch(db);
+  batch.delete(fs.doc(db, 'announcements', id));
+  if (eventId) batch.delete(fs.doc(db, 'events', eventId));
+  await batch.commit();
+}
+
+/* ── Church calendar (pastor & moderators add dates) ──────────────────── */
+
+export const REPEATS = ['weekly', 'biweekly', 'monthly', 'monthly_nth'];
+
+// Live calendar. Two listeners merged into one list: one-off events on or
+// after sinceDate ('YYYY-MM-DD'), plus every repeating series no matter when
+// it started (a weekly service that began years ago still shows today).
+// Dates are plain local-date strings so they sort and never shift by zone.
+export async function watchEvents(sinceDate, cb, onError) {
+  const { fs, db } = await init();
+  const col = fs.collection(db, 'events');
+  let recent = [], series = [];
+  const emit = () => {
+    const byId = new Map();
+    for (const e of [...recent, ...series]) byId.set(e.id, e);
+    cb([...byId.values()]);
+  };
+  const toList = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const u1 = fs.onSnapshot(
+    fs.query(col, fs.where('date', '>=', sinceDate), fs.orderBy('date', 'asc'), fs.limit(500)),
+    (snap) => { recent = toList(snap); emit(); }, onError);
+  const u2 = fs.onSnapshot(
+    fs.query(col, fs.where('repeat', 'in', REPEATS), fs.limit(200)),
+    (snap) => { series = toList(snap); emit(); }, onError);
+  return () => { u1(); u2(); };
+}
+
+// Create (id = null) or update an event.
+// repeat: '' | 'weekly' | 'biweekly' | 'monthly' | 'monthly_nth';
+// until: optional last date ('YYYY-MM-DD') for a repeating series.
+export async function saveEvent(id, { title, date, time, location, notes, repeat, until }) {
+  const { fs, db, authInst } = await init();
+  const data = {
+    title: title.trim(),
+    date,
+    time: time || '',
+    location: (location || '').trim(),
+    notes: (notes || '').trim(),
+    repeat: REPEATS.includes(repeat) ? repeat : '',
+    until: repeat && until ? until : '',
+  };
+  if (id) {
+    await fs.updateDoc(fs.doc(db, 'events', id), { ...data, updatedAt: fs.serverTimestamp() });
+    return;
+  }
+  const user = authInst.currentUser;
+  const prof = await getProfile(user.uid);
+  await fs.addDoc(fs.collection(db, 'events'), {
+    ...data,
+    uid: user.uid,
+    author: (prof && prof.name) || 'Church office',
+    createdAt: fs.serverTimestamp(),
+  });
+}
+
+// Leave one date out of a repeating series (e.g. no service on a holiday).
+export async function skipEventDate(id, date) {
+  const { fs, db } = await init();
+  await fs.updateDoc(fs.doc(db, 'events', id), {
+    skip: fs.arrayUnion(date),
+    updatedAt: fs.serverTimestamp(),
+  });
+}
+
+export async function deleteEvent(id, announcementId) {
+  const { fs, db } = await init();
+  const batch = fs.writeBatch(db);
+  batch.delete(fs.doc(db, 'events', id));
+  if (announcementId) batch.delete(fs.doc(db, 'announcements', announcementId));
+  await batch.commit();
+}
+
 export function currentUid(user) {
   return user && user.uid;
 }

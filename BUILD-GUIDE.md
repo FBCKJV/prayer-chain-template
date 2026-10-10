@@ -131,14 +131,16 @@ and your invite code. ~10 minutes, all clicking.
    - Reload the app. You'll see a **Moderator** badge and an **Edit** button on the
      📋 Prayer List. Repeat for anyone else you want as a moderator.
 
-   **Two roles you can give (both set the same way — the `role` field):**
-   - `admin` → **Moderator**: full powers — edit the prayer list, delete any
-     post/comment, and remove members.
-   - `pastor` → **Pastor**: can **edit the Weekly Prayer List** (and wears a
-     Pastor badge), but not the other moderator powers. Handy for a pastor who
-     should keep the list current without full moderation duties.
+   **Roles you can give (all set the same way — the `role` field, typed in
+   lowercase exactly as shown):**
+   - `admin` → **Moderator**: full powers — everything below, plus delete any
+     post/comment and remove/restore members.
+   - `pastor`, `deacon`, or `secretary` → **Church leader** (with a Pastor /
+     Deacon / Secretary badge): can **edit the Weekly Prayer List**, **post church
+     messages**, and **manage the calendar** — but not the moderator powers.
 
-   To appoint a pastor, do the same as above but set `role` = `pastor`.
+   To appoint one, do the same as above but set `role` to `pastor`, `deacon`, or
+   `secretary`. (Capitals matter: `Deacon` won't work — use `deacon`.)
 
 ✅ **You now have a complete, private prayer app for your church.** You can stop
 here and start inviting people (share the app link + the invite code). Everything
@@ -176,9 +178,10 @@ All optional — the app works great as-is with a neutral church logo.
 - **Your logo:** replace these images in your repo with your own (keep the same
   filenames and square sizes):
   `assets/logo-display.png`, and in `assets/icons/`:
-  `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (this one should fill
-  the whole square — no transparent corners), `apple-touch-icon.png`,
-  `favicon-32.png`.
+  `app-icon-192.png` and `app-icon-512.png` (the home-screen icons — **solid
+  square, no transparent corners**, with your round logo filling about 90% of
+  it; transparent corners make Android shrink the icon onto a white circle),
+  `apple-touch-icon.png`, `favicon-32.png`.
   *Easiest:* ask Claude Code (Part 2) to generate them from your logo, or use a
   free "PWA icon generator" website.
 - **Prayer List categories:** edit the list in `js/prayer-list-seed.js`.
@@ -189,8 +192,11 @@ All optional — the app works great as-is with a neutral church logo.
 
 ## Part 6 — (Optional, later) Push notifications
 
-Adds a phone alert when a **new prayer** is posted or one is **marked answered**
-(never for comments). It's free but has more moving parts, so do it **after** your
+Adds a phone alert when a **new prayer** is posted, one is **marked answered**, or
+a leader posts a **church message** (never for comments). Message alerts show the
+message's title, e.g. "📣 Potluck Nov 1! — From Pastor Smith · Sun, Nov 1".
+**Quiet hours:** anything posted between 8 PM and 8 AM (your church's time) is
+held and delivered at 8 AM. It's free but has more moving parts, so do it **after** your
 app is working and tested. It uses two services: **OneSignal** (sends the alert)
 and a tiny **Cloudflare Worker** (safely holds the secret key).
 
@@ -231,6 +237,7 @@ and a tiny **Cloudflare Worker** (safely holds the secret key).
    | `FIREBASE_PROJECT_ID` | Text | your Firebase project id |
    | `ALLOW_ORIGIN` | Text | `https://YOUR-USERNAME.github.io` |
    | `APP_URL` | Text | `https://YOUR-USERNAME.github.io/prayer/` |
+   | `CHURCH_TZ` | Text | *(optional)* your time zone for quiet hours, e.g. `America/Chicago`, `America/Denver`, `America/Los_Angeles`. Eastern is used if blank. |
    Save/Deploy.
 4. Copy the Worker's **`*.workers.dev`** URL (shown on its page).
 
@@ -251,6 +258,9 @@ Commit, wait 1–2 minutes, hard-refresh the app.
 2. Confirm a subscriber appears in **OneSignal → Audience → Subscriptions**.
 3. From another account, post a prayer → you should get a **"🙏 New prayer
    request"** notification. Mark one answered → a **"🎉 Answered prayer"** alert.
+   As a leader, post a message with a title → an alert showing that title.
+   (Testing after 8 PM? The alert waits until 8 AM — that's quiet hours, not a
+   failure. The Worker's **Logs** show `scheduled=` with the send time.)
 
 If nothing arrives, check OneSignal's **Subscriptions** (did it register?) and
 **Delivery** (did a message send?). The service-worker scope in step 6a·3 is the
@@ -273,8 +283,16 @@ the app is in regular use — not needed to get started.
 - **Invite someone:** share the app link + the invite code.
 - **Change the invite code:** Firebase → Firestore → `config/invite` → edit `code`.
 - **Add a moderator:** set `role: admin` on their `users` document (Part 4·4).
-- **Add a pastor (can edit the list only):** set `role: pastor` on their `users`
-  document, the same way.
+- **Add a church leader** (pastor, deacon, or secretary — edits the prayer list,
+  posts messages, manages the calendar): set `role` to `pastor`, `deacon`, or
+  `secretary` (lowercase) on their `users` document, the same way.
+- **Post a church message:** **📣 Messages → ＋ Post a message**. Tick **📅 Add
+  to calendar** to put the event's date, time and place on the calendar in the
+  same step — one entry, one alert. Edit or delete the message and the calendar
+  entry follows. Once the date passes, the message is marked **Passed**.
+- **Add a quiet date** (birthdays, anniversaries, save-the-dates):
+  **📅 Calendar → ＋ Add event**. These never send an alert. Can repeat weekly,
+  every other week, or monthly; **Skip this date** drops a single week.
 - **Someone forgot their password:** they tap **Forgot your password?** on the
   sign-in screen and follow the emailed link. Don't "Remove" them for this — that
   only revokes access and blocks re-registering with the same email.
@@ -292,6 +310,9 @@ the app is in regular use — not needed to get started.
   cut down the middle — each sheet becomes two identical two-sided half-page
   prayer sheets. (Printers vary — if front/back don't line up, switch the duplex
   option to long edge.) Best from a computer; on a phone use Print → Save as PDF.
+  The PDF is named with the date of the coming prayer meeting, e.g.
+  `Prayer List 101426.pdf` (set the day with `PRINT_LIST_DAY` in `js/app.js`;
+  3 = Wednesday).
   **See what it looks like:** [`assets/sample-weekly-prayer-list.pdf`](./assets/sample-weekly-prayer-list.pdf)
   is a filled-in example.
 
