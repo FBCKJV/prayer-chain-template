@@ -24,6 +24,13 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+/* Text size (⋯ menu). Every size in the app is in rem, so this scales it all. */
+html[data-text-size="large"] { font-size: 112.5%; }
+html[data-text-size="larger"] { font-size: 125%; }
+/* At the bigger sizes, let tab labels wrap to two lines and keep the
+   Prayer List button to just its icon so the header never crowds. */
+html[data-text-size] .tab-label { white-space: normal; text-align: center; overflow: visible; }
+html[data-text-size] .list-nav-text { display: none; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg);
@@ -49,8 +56,8 @@ body {
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; min-width: 0; flex: 1 1 auto; }
 .brand-mark { width: 30px; height: 30px; flex: 0 0 auto; display: block; }
-.brand-lines { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
-.brand-text { letter-spacing: 0.2px; white-space: nowrap; }
+.brand-lines { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; overflow: hidden; }
+.brand-text { letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand-church { font-size: 0.66rem; font-weight: 600; color: var(--muted); letter-spacing: .2px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topbar-right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
@@ -72,6 +79,38 @@ body {
   padding: 10px 12px; border-radius: 8px; cursor: pointer;
 }
 .menu-item:hover { background: var(--surface-2); }
+.menu-textsize { padding: 8px 12px 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 4px 0; }
+.menu-textsize-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+.textsize-btns { display: flex; gap: 6px; }
+.ts-btn {
+  flex: 1; font: inherit; font-weight: 700; padding: 8px 0; border-radius: 8px; cursor: pointer;
+  background: var(--bg-2); color: var(--text); border: 1px solid var(--line);
+}
+.ts-btn[data-size=""] { font-size: 0.9rem; }
+.ts-btn[data-size="large"] { font-size: 1.05rem; }
+.ts-btn[data-size="larger"] { font-size: 1.2rem; }
+.ts-btn.is-on { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+/* "How do I…?" help */
+.how { max-height: 84vh; overflow-y: auto; gap: 10px; }
+.how-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.how-intro { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.how details { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+.how summary {
+  cursor: pointer; padding: 14px 14px; font-weight: 700; font-size: 1rem; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.how summary::-webkit-details-marker { display: none; }
+.how summary::after { content: '▾'; color: var(--muted); transition: transform .15s; }
+.how details[open] summary::after { transform: rotate(180deg); }
+.how ol { margin: 0; padding: 0 16px 14px 36px; display: flex; flex-direction: column; gap: 8px; font-size: 0.98rem; }
+.how .how-sub { margin: 0; padding: 0 14px 6px; font-weight: 700; font-size: 0.9rem; color: var(--gold-soft); }
+.how .how-note { margin: 0; padding: 0 14px 14px; color: var(--muted); font-size: 0.88rem; }
+.how-btn {
+  display: inline-block; background: var(--gold); color: #fff; font-weight: 700; font-size: 0.85rem;
+  padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+}
+.how-btn.ghost { background: var(--bg-2); color: var(--text); border: 1px solid var(--line); }
 
 /* Phones: drop the least-essential header bits so the brand never crunches. */
 @media (max-width: 600px) {
@@ -294,6 +333,24 @@ body {
   color: var(--gold-soft); font-size: 0.8rem; font-weight: 700;
 }
 .msg-card.flash { box-shadow: 0 0 0 3px var(--gold); transition: box-shadow .3s; }
+.greet-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+  background: #fff7e6; border: 1px solid #f3c969; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.9rem;
+}
+.greet-bar span { flex: 1 1 200px; }
+.celebration-list { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.cel-row { display: flex; gap: 10px; align-items: baseline; padding: 6px 2px; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+.cel-row:last-child { border-bottom: 0; }
+.cel-row .cel-when { color: var(--muted); font-size: 0.82rem; min-width: 74px; }
+.cel-row .cel-name { flex: 1; overflow-wrap: anywhere; }
+.muted-small { color: var(--muted); font-weight: 600; text-transform: none; letter-spacing: 0; }
+.import-link { margin-top: 12px; font-size: 0.85rem; color: var(--gold-soft); }
+.import-preview { max-height: 40vh; overflow-y: auto; font-size: 0.88rem; }
+.import-preview table { width: 100%; border-collapse: collapse; }
+.import-preview td, .import-preview th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.import-preview .skipped { color: var(--danger); }
+.event.is-celebration { background: #fffaf0; }
+.msg-card.is-celebration { background: #fffaf0; border-color: #f3c969; }
 .quiet-note { display: block; color: var(--muted); font-size: 0.78rem; }
 .mod-badge.pastor {
   background: color-mix(in srgb, #7a5cd0 20%, transparent); color: #5a3fb0;
@@ -364,6 +421,9 @@ body {
 .install-bar .grow { flex: 1; min-width: 0; }
 .install-bar .it { font-weight: 700; font-size: 0.92rem; }
 .install-bar .is { color: var(--muted); font-size: 0.8rem; }
+#notifyBar { align-items: flex-start; }
+.notify-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.notify-actions .btn { padding: 10px 14px; }
 .install-bar .x { background: none; border: 0; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 4px 6px; line-height: 1; }
 .ios-help {
   max-width: var(--maxw); margin: 0 auto 14px; padding: 12px 14px;
@@ -391,23 +451,32 @@ body {
 .about-footer { border-top: 1px solid var(--line); padding-top: 12px; text-align: center; color: var(--muted); font-size: 0.85rem; line-height: 1.5; white-space: pre-line; }
 .about-footer:empty { display: none; border: 0; padding: 0; }
 
-/* Section nav (Prayer / Messages / Calendar) — second row of the top bar */
+/* Section nav (Prayers & Praise / Messages / Calendar) — second row of the top bar */
 .main-nav {
   max-width: var(--maxw); margin: 0 auto; display: flex; gap: 4px;
   padding: 0 12px 8px;
 }
+/* Phone-style tabs: icon on top, short label below, so all three stay the
+   same width ("Prayers & Praise" included). The "(2)" count rides next to the
+   icon so it never widens the label. */
 .main-tab {
-  flex: 1; position: relative; border: 0; background: transparent; color: var(--muted);
-  font: inherit; font-weight: 600; font-size: 0.9rem; padding: 8px 6px; border-radius: 8px;
-  cursor: pointer; white-space: nowrap;
+  flex: 1 1 0; min-width: 0; position: relative; border: 0; background: transparent; color: var(--muted);
+  font: inherit; font-weight: 600; padding: 6px 4px 7px; border-radius: 10px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.15;
 }
 .main-tab:hover { color: var(--text); }
 .main-tab.is-active { background: var(--surface); color: var(--gold-soft); box-shadow: var(--shadow); }
-.nav-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--danger); margin-left: 5px; vertical-align: 2px;
+.tab-top { display: inline-flex; align-items: center; gap: 3px; height: 1.35rem; }
+.tab-icon { font-size: 1.15rem; line-height: 1; }
+.tab-label { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.tab-count { color: var(--danger); font-weight: 800; font-size: 0.78rem; }
+.tag.new { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+.event-title .tag.new { margin-left: 6px; vertical-align: 2px; font-size: 0.62rem; }
+@media (max-width: 360px) {
+  .tab-label { font-size: 0.72rem; }
+  .main-nav { padding: 0 8px 8px; }
+  .list-nav-text { display: none; } /* just 📋 so the app name always fits */
 }
-@media (max-width: 380px) { .main-tab { font-size: 0.82rem; padding: 8px 2px; } }
 
 /* Church messages */
 .msg-card { padding: 14px 16px 12px; }

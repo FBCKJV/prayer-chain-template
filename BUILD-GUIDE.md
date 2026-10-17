@@ -135,12 +135,12 @@ and your invite code. ~10 minutes, all clicking.
    lowercase exactly as shown):**
    - `admin` → **Moderator**: full powers — everything below, plus delete any
      post/comment and remove/restore members.
-   - `pastor`, `deacon`, or `secretary` → **Church leader** (with a Pastor /
+   - `pastor`, `deacon`, `clerk`, or `secretary` → **Church leader** (with a Pastor /
      Deacon / Secretary badge): can **edit the Weekly Prayer List**, **post church
      messages**, and **manage the calendar** — but not the moderator powers.
 
-   To appoint one, do the same as above but set `role` to `pastor`, `deacon`, or
-   `secretary`. (Capitals matter: `Deacon` won't work — use `deacon`.)
+   To appoint one, do the same as above but set `role` to `pastor`, `deacon`,
+   `clerk`, or `secretary`. (Capitals matter: `Deacon` won't work — use `deacon`.)
 
 ✅ **You now have a complete, private prayer app for your church.** You can stop
 here and start inviting people (share the app link + the invite code). Everything
@@ -251,7 +251,30 @@ export const NOTIFY_ENDPOINT = 'https://prayer-notify.your-name.workers.dev';
 ```
 Commit, wait 1–2 minutes, hard-refresh the app.
 
-### 6d. Test notifications
+### 6d. (Optional) Automatic birthday & anniversary greetings
+
+Each morning at **8 AM** the Worker can post one **"🎉 Celebrating today"**
+message for that day's birthdays and anniversaries, and alert everyone. Because
+no one is signed in at 8 AM, it needs its own key:
+
+1. Firebase → ⚙ **Project settings → Service accounts → Generate new private
+   key** → **Generate key**. A `.json` file downloads. *Treat it like a
+   password* — it can read and change your whole database.
+2. Cloudflare → your Worker → **Settings → Variables and Secrets → + Add** →
+   Type **Secret**, name `FIREBASE_SA`, value = the **entire** contents of that
+   file (open it in Notepad, select all, copy). Optionally add a Text variable
+   `APP_NAME` (e.g. `Grace Church`) — the greeting is shown as coming from it.
+   **Deploy**, then delete the downloaded file.
+3. Cloudflare → your Worker → **Settings → Trigger events → + Add → Cron
+   Triggers**: add `0 12 * * *` and also `0 13 * * *` (UTC). The Worker only
+   posts on whichever one is 8 AM in your `CHURCH_TZ`, so daylight saving needs
+   no attention. *(Pacific time: use `0 15 * * *` and `0 16 * * *`; Central:
+   `0 13 * * *` and `0 14 * * *`; Mountain: `0 14 * * *` and `0 15 * * *`.)*
+
+Skip this and nothing breaks — a leader can post the day's greeting by hand:
+**📅 Calendar → Today → "Post today's greetings"**.
+
+### 6e. Test notifications
 
 1. On a computer or Android phone, open the app, sign in, open the **⋯ menu →
    🔔 Turn on prayer alerts** → **Allow**.
@@ -283,16 +306,26 @@ the app is in regular use — not needed to get started.
 - **Invite someone:** share the app link + the invite code.
 - **Change the invite code:** Firebase → Firestore → `config/invite` → edit `code`.
 - **Add a moderator:** set `role: admin` on their `users` document (Part 4·4).
-- **Add a church leader** (pastor, deacon, or secretary — edits the prayer list,
-  posts messages, manages the calendar): set `role` to `pastor`, `deacon`, or
-  `secretary` (lowercase) on their `users` document, the same way.
+- **Add a church leader** (pastor, deacon, clerk or secretary — edits the prayer
+  list, posts messages, manages the calendar): set `role` to `pastor`, `deacon`,
+  `clerk`, or `secretary` (lowercase) on their `users` document, the same way.
 - **Post a church message:** **📣 Messages → ＋ Post a message**. Tick **📅 Add
   to calendar** to put the event's date, time and place on the calendar in the
   same step — one entry, one alert. Edit or delete the message and the calendar
   entry follows. Once the date passes, the message is marked **Passed**.
-- **Add a quiet date** (birthdays, anniversaries, save-the-dates):
-  **📅 Calendar → ＋ Add event**. These never send an alert. Can repeat weekly,
-  every other week, or monthly; **Skip this date** drops a single week.
+- **Add a quiet date** (save-the-dates): **📅 Calendar → ＋ Add event**. These
+  never send an alert. Can repeat weekly, every other week, or monthly; **Skip
+  this date** drops a single week.
+- **Birthdays & anniversaries:** **📅 Calendar → ＋ Add event → Type: 🎂 Birthday**
+  (or 💍 Anniversary), or import a whole list: **📅 Calendar → ⬆ Import birthdays
+  & anniversaries** with a CSV saved from your spreadsheet — columns **Name,
+  Type, Date** (e.g. `Pat Doe, Birthday, 12/02`; couples as `John & Mary Smith,
+  Anniversary, 6/14`). Only the month and day are kept. You'll see a preview
+  (rows it couldn't read are listed) before anything is added. On the day, a
+  "🎉 Celebrating today" message goes out (automatically with 6d, or tap **Post
+  today's greetings**) and members tap 🎉 to send good wishes.
+- **Help for members:** point people to **⋯ → ❓ How do I…?** (plain-words
+  answers) and **⋯ → Text size** (A / A+ / A++) if they find the words small.
 - **Someone forgot their password:** they tap **Forgot your password?** on the
   sign-in screen and follow the emailed link. Don't "Remove" them for this — that
   only revokes access and blocks re-registering with the same email.

@@ -42,8 +42,13 @@ they'd like you to walk them through setup one step at a time.
   `assets/icons/app-icon-192.png` / `app-icon-512.png`, solid squares),
   `sw.js` (offline cache).
 - `cloudflare-worker/notify.js` — push relay (OneSignal secret, quiet hours
-  8 PM–8 AM in `CHURCH_TZ`). **They must re-paste it in Cloudflare after any
-  change.**
+  8 PM–8 AM in `CHURCH_TZ`, optional 8 AM birthday greetings via the
+  `FIREBASE_SA` secret + Cron Triggers). **They must re-paste it in Cloudflare
+  after any change.**
+- Birthdays & anniversaries live in one Firestore doc, `lists/celebrations`
+  (`entries: [{ id, name, kind, md: 'MM-DD' }]` — never a year).
+- Keep it simple: most members are older and not technical. No comments on
+  messages, no direct messages. Prefer plain words and big tap targets.
 - `BUILD-GUIDE.md` — the detailed click-through for the console steps.
 
 ## "Is it set up yet?" quick check

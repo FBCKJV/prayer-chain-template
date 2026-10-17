@@ -100,7 +100,7 @@ export async function promptEnable() {
 }
 
 // Ask the Worker to notify everyone. type is 'new_prayer' | 'answered' |
-// 'announcement' | 'new_event' (the last two: pastor & moderators only).
+// 'announcement' | 'celebrate' (church leaders only). Returns the Worker's reply.
 // The Worker builds the wording itself; we only send the token + type.
 // extra: { announcementId } for 'announcement' — the Worker looks the message
 // up itself to show its title, so no text is ever taken from here.
@@ -110,11 +110,14 @@ export async function sendPush(type, url, extra) {
   try { idToken = await getIdToken(); } catch { return; }
   if (!idToken) return;
   try {
-    await fetch(NOTIFY_ENDPOINT, {
+    const res = await fetch(NOTIFY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idToken, type, url: url || appUrl(), ...(extra || {}) }),
       keepalive: true,
     });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) console.warn('[notify] push relay failed', res.status, data);
+    return data;
   } catch (e) { /* best-effort; never block the UI */ }
 }

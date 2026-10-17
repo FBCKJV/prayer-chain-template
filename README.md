@@ -20,14 +20,22 @@ Built to be quiet and low-drama by design:
   print as a double-sided half-sheet for services
   ([sample PDF](./assets/sample-weekly-prayer-list.pdf)).
 - **Open moderation** — moderators wear a visible badge; nothing is done in secret.
-- **📣 Church messages** — a Messages tab where church leaders (pastor, deacons,
-  secretary, moderators) post news for everyone; members reply with a 👍. A
-  message can also **add its date to the calendar** in the same step.
+- **Three simple tabs** — 🙏 **Prayers & Praise**, 📣 **Messages**, 📅 **Calendar** —
+  each showing a count like **(2)** of new posts since you last looked, so people
+  who don't use alerts still see what's new.
+- **📣 Church messages** — church leaders (pastor, deacons, clerk/secretary,
+  moderators) post news for everyone; members reply with a 👍. A message can also
+  **add its date to the calendar** in the same step.
 - **📅 Church calendar** — month view + "Coming up" list, repeating dates (every
-  week, every other week, monthly), and quiet "save the date" entries such as
-  birthdays that don't send an alert.
-- **Optional push notifications** for new and answered prayers and church
-  messages — held overnight (8 PM–8 AM) so nobody's phone buzzes at 2 AM.
+  week, every other week, monthly), and quiet "save the date" entries.
+- **🎂 Birthdays & anniversaries** — add them one at a time or import a
+  spreadsheet (CSV). Only month and day are kept. On the day, a "🎉 Celebrating
+  today" message goes out and members tap 🎉 to send good wishes.
+- **Easy for everyone** — a **Text size** switch (A / A+ / A++) and a plain-words
+  **"How do I…?"** help page in the ⋯ menu.
+- **Optional push notifications** for new and answered prayers, church messages
+  and birthday greetings — held overnight (8 PM–8 AM) so nobody's phone buzzes
+  at 2 AM. People without alerts get a friendly reminder at most once a week.
 
 It's a plain static website (HTML/CSS/JavaScript, no build step) backed by
 **Firebase** (Google's free database + login). It runs entirely on free tiers.
