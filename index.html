@@ -13,6 +13,11 @@
 <meta name="apple-mobile-web-app-title" content="Prayer Chain" />
 <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
 <link rel="stylesheet" href="./css/style.css" />
+<script>
+  // Text size chosen in the ⋯ menu (Normal / Large / Larger), applied before
+  // the page draws so it never flashes small first.
+  try { var ts = localStorage.getItem('fbcprayer_text_size'); if (ts) document.documentElement.dataset.textSize = ts; } catch (e) {}
+</script>
 
 <div id="app">
   <!-- Header -->
@@ -26,22 +31,40 @@
         </span>
       </div>
       <div class="topbar-right">
-        <button id="listNavBtn" class="btn btn-ghost list-nav" type="button">📋 Prayer List</button>
+        <button id="listNavBtn" class="btn btn-ghost list-nav" type="button" aria-label="Weekly Prayer List">📋<span class="list-nav-text"> Prayer List</span></button>
         <div class="menu-wrap">
           <button id="menuBtn" class="btn btn-ghost menu-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu">⋯</button>
           <div id="menu" class="menu" role="menu" hidden>
             <button id="notifyMenuBtn" class="menu-item" type="button" role="menuitem" hidden>🔔 Turn on alerts</button>
+            <button id="howBtn" class="menu-item" type="button" role="menuitem">❓ How do I…?</button>
+            <div class="menu-textsize" role="group" aria-label="Text size">
+              <span class="menu-textsize-label">Text size</span>
+              <div class="textsize-btns">
+                <button type="button" class="ts-btn" data-size="" aria-label="Normal text">A</button>
+                <button type="button" class="ts-btn" data-size="large" aria-label="Large text">A+</button>
+                <button type="button" class="ts-btn" data-size="larger" aria-label="Larger text">A++</button>
+              </div>
+            </div>
             <button id="membersBtn" class="menu-item" type="button" role="menuitem">👥 Members</button>
-            <button id="aboutBtn" class="menu-item" type="button" role="menuitem">❓ About &amp; help</button>
+            <button id="aboutBtn" class="menu-item" type="button" role="menuitem">ℹ️ About</button>
             <button id="signOutBtn" class="menu-item" type="button" role="menuitem">↩ Sign out</button>
           </div>
         </div>
       </div>
     </div>
     <nav class="main-nav" role="tablist" aria-label="Sections">
-      <button class="main-tab is-active" data-section="prayer" type="button" role="tab">🙏 Prayer</button>
-      <button class="main-tab" data-section="messages" type="button" role="tab">📣 Messages<span id="msgDot" class="nav-dot" hidden aria-label="new"></span></button>
-      <button class="main-tab" data-section="calendar" type="button" role="tab">📅 Calendar</button>
+      <button class="main-tab is-active" data-section="prayer" type="button" role="tab">
+        <span class="tab-top"><span class="tab-icon" aria-hidden="true">🙏</span><span id="countPrayer" class="tab-count" hidden></span></span>
+        <span class="tab-label">Prayers &amp; Praise</span>
+      </button>
+      <button class="main-tab" data-section="messages" type="button" role="tab">
+        <span class="tab-top"><span class="tab-icon" aria-hidden="true">📣</span><span id="countMessages" class="tab-count" hidden></span></span>
+        <span class="tab-label">Messages</span>
+      </button>
+      <button class="main-tab" data-section="calendar" type="button" role="tab">
+        <span class="tab-top"><span class="tab-icon" aria-hidden="true">📅</span><span id="countCalendar" class="tab-count" hidden></span></span>
+        <span class="tab-label">Calendar</span>
+      </button>
     </nav>
   </header>
 
@@ -92,7 +115,7 @@
         <button id="authSubmit" class="btn btn-primary btn-block" type="submit">Sign in</button>
       </form>
     </div>
-    <p class="footer-note">No direct messages. Everything shared here goes to the whole prayer chain.</p>
+    <p class="footer-note">No direct messages. Everything shared here goes to the whole church family.</p>
   </main>
 
   <!-- Feed view -->
@@ -101,7 +124,7 @@
     <div id="installBar" class="install-bar" hidden>
       <img src="./assets/logo-display.png" alt="" />
       <div class="grow">
-        <div class="it">Add Prayer Chain to your home screen</div>
+        <div class="it">Add this app to your home screen</div>
         <div class="is">Open it like an app — one tap, no browser bar.</div>
       </div>
       <button id="installBtn" class="btn btn-primary" type="button">Add</button>
@@ -117,11 +140,13 @@
     <div id="notifyBar" class="install-bar" hidden>
       <span aria-hidden="true" style="font-size:1.6rem">🔔</span>
       <div class="grow">
-        <div class="it">Turn on alerts</div>
-        <div class="is">Get notified of new prayer requests, answered prayers, and church messages — only between 8 AM and 8 PM. No alerts for comments.</div>
+        <div class="it">Would you like alerts?</div>
+        <div class="is">Your phone will buzz when someone asks for prayer, a prayer is answered, or the church shares news. Never between 8 PM and 8 AM.</div>
+        <div class="notify-actions">
+          <button id="notifyBtn" class="btn btn-primary" type="button">Yes, turn on alerts</button>
+          <button id="notifyDismiss" class="btn btn-ghost" type="button">Not now</button>
+        </div>
       </div>
-      <button id="notifyBtn" class="btn btn-primary" type="button">Allow</button>
-      <button id="notifyDismiss" class="x" type="button" aria-label="Dismiss">×</button>
     </div>
 
     <div class="feed-tabs" role="tablist" aria-label="Filter prayers">
@@ -164,8 +189,15 @@
       <button id="newEventBtn" class="btn btn-primary" type="button" hidden>＋ Add event</button>
     </div>
     <div id="calDayList" class="event-list"></div>
+    <div id="greetBar" class="greet-bar" hidden>
+      <span>🎉 Today’s birthday/anniversary greeting hasn’t been posted yet.</span>
+      <button id="greetBtn" class="btn btn-primary" type="button">Post today’s greetings</button>
+    </div>
     <h3 class="section-heading">Coming up</h3>
     <div id="calUpcoming" class="event-list"></div>
+    <h3 class="section-heading">🎂 Birthdays &amp; anniversaries <small class="muted-small">(next 30 days)</small></h3>
+    <div id="calCelebrations" class="celebration-list"></div>
+    <button id="importBtn" class="link-btn import-link" type="button" hidden>⬆ Import birthdays &amp; anniversaries from a spreadsheet (CSV)</button>
   </main>
 
   <!-- Weekly Prayer List view -->
@@ -274,20 +306,28 @@
   <form method="dialog" class="dialog-form" id="eventForm">
     <h2 class="dialog-title" id="eventFormTitle">Add an event</h2>
     <label class="field">
-      <span>What</span>
+      <span>Type</span>
+      <select id="eKind">
+        <option value="">📅 Event</option>
+        <option value="birthday">🎂 Birthday</option>
+        <option value="anniversary">💍 Anniversary</option>
+      </select>
+    </label>
+    <label class="field">
+      <span id="eTitleLabel">What</span>
       <input id="eTitle" type="text" maxlength="100" required placeholder="e.g. Men’s breakfast" />
     </label>
     <div class="field-row">
       <label class="field">
-        <span>Date</span>
+        <span id="eDateLabel">Date</span>
         <input id="eDate" type="date" required />
       </label>
-      <label class="field">
+      <label class="field event-only">
         <span>Time <small>(optional)</small></span>
         <input id="eTime" type="time" />
       </label>
     </div>
-    <div class="field-row">
+    <div class="field-row event-only">
       <label class="field">
         <span>Repeats</span>
         <select id="eRepeat">
@@ -303,21 +343,40 @@
         <input id="eUntil" type="date" />
       </label>
     </div>
-    <label class="field">
+    <label class="field event-only">
       <span>Where <small>(optional)</small></span>
       <input id="eLocation" type="text" maxlength="120" placeholder="Fellowship hall" />
     </label>
-    <label class="field">
+    <label class="field event-only">
       <span>Details <small>(optional)</small></span>
       <textarea id="eNotes" rows="3" maxlength="1000"></textarea>
     </label>
-    <p class="hint" id="eQuietNote">Calendar dates are added quietly — no notification. To announce an event, post it from 📣 Messages with “Add to calendar”.</p>
+    <p class="hint celebration-only" hidden>Comes back every year. Only the month and day are saved — the year you pick doesn’t matter. On the day, a “🎉 Celebrating today” message goes out at 8 AM.</p>
+    <p class="hint event-only" id="eQuietNote">Calendar dates are added quietly — no notification. To announce an event, post it from 📣 Messages with “Add to calendar”.</p>
     <p id="eventError" class="form-error" role="alert" hidden></p>
     <div class="dialog-actions">
       <button type="button" class="btn btn-ghost" id="eventCancel">Cancel</button>
       <button type="submit" class="btn btn-primary" id="eventSubmit">Save</button>
     </div>
   </form>
+</dialog>
+
+<!-- Import birthdays & anniversaries (CSV) -->
+<dialog id="importDialog" class="dialog">
+  <div class="dialog-form">
+    <h2 class="dialog-title">Import birthdays &amp; anniversaries</h2>
+    <p class="hint">Save your spreadsheet as <b>CSV</b> with three columns:
+      <b>Name</b>, <b>Type</b> (Birthday or Anniversary), <b>Date</b>
+      (e.g. <code>12/02</code>, <code>Dec 2</code>, or <code>1975-12-02</code> — only the month
+      and day are kept). <a href="#" id="importSample">Download a sample file</a>.</p>
+    <input id="importFile" type="file" accept=".csv,text/csv,text/plain" />
+    <div id="importPreview" class="import-preview"></div>
+    <p id="importError" class="form-error" role="alert" hidden></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" id="importCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="importGo" disabled>Import</button>
+    </div>
+  </div>
 </dialog>
 
 <!-- Members / moderation dialog -->
@@ -333,6 +392,93 @@
 </dialog>
 
 <!-- About / help dialog (populated from site-config.js + the current URL) -->
+<!-- "How do I…?" — plain-words help -->
+<dialog id="howDialog" class="dialog">
+  <div class="dialog-form how">
+    <div class="how-head">
+      <h2 class="dialog-title">❓ How do I…?</h2>
+      <button type="button" class="btn btn-ghost" id="howClose">Close</button>
+    </div>
+    <p class="how-intro">Tap a question to see the answer.</p>
+
+    <details>
+      <summary>🙏 Share a prayer request or praise</summary>
+      <ol>
+        <li>Tap the <b>🙏 Prayers &amp; Praise</b> tab at the top.</li>
+        <li>Tap the blue <span class="how-btn">＋ Share a prayer request</span> button.</li>
+        <li>Type your request. For good news, pick <b>Praise / Thanksgiving</b> as the category.</li>
+        <li>Tap <span class="how-btn">Post to the chain</span>.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>🤲 Let someone know I prayed</summary>
+      <ol>
+        <li>Tap a prayer request to open it.</li>
+        <li>Tap <span class="how-btn ghost">🙏 I prayed</span>. They’ll see that someone is praying.</li>
+        <li>To add a kind word, tap <b>💬 Leave encouragement</b>.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>🎉 Share that my prayer was answered</summary>
+      <ol>
+        <li>Open your own prayer request.</li>
+        <li>Tap <b>Mark answered</b>. Everyone gets the good news.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>📣 See church news and events</summary>
+      <ol>
+        <li>Tap <b>📣 Messages</b> for news from the pastor and church leaders. Tap 👍 to say you saw it.</li>
+        <li>Tap <b>📅 Calendar</b> for upcoming events, birthdays and anniversaries.</li>
+        <li>A number like <b>(2)</b> on a tab means there are 2 new things since you last looked.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>🔔 Turn on alerts</summary>
+      <ol>
+        <li>Tap the <b>⋯</b> button at the top right.</li>
+        <li>Tap <b>🔔 Turn on alerts</b>, then tap <b>Allow</b> when your phone asks.</li>
+      </ol>
+      <p class="how-note">On an iPhone, alerts only work after the app is on your home screen (see the next question) and opened from there.</p>
+    </details>
+
+    <details>
+      <summary>📱 Put the app on my home screen</summary>
+      <p class="how-sub">Android (Chrome):</p>
+      <ol>
+        <li>Tap the <b>⋮</b> button at the top right of Chrome.</li>
+        <li>Tap <b>Install app</b> (or <b>Add to Home screen</b> → <b>Install</b>).</li>
+      </ol>
+      <p class="how-sub">iPhone (Safari):</p>
+      <ol>
+        <li>Tap the <b>Share</b> button (a square with an arrow pointing up).</li>
+        <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>🔤 Make the words bigger</summary>
+      <ol>
+        <li>Tap the <b>⋯</b> button at the top right.</li>
+        <li>Under <b>Text size</b>, tap <b>A+</b> or <b>A++</b>. Tap <b>A</b> to go back to normal.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>🔑 I forgot my password</summary>
+      <ol>
+        <li>On the sign-in screen, type your email address.</li>
+        <li>Tap <b>Forgot your password?</b></li>
+        <li>Check your email (and the spam folder) for a link to set a new one.</li>
+      </ol>
+    </details>
+  </div>
+</dialog>
+
 <dialog id="aboutDialog" class="dialog">
   <div class="dialog-form about">
     <div class="about-head">

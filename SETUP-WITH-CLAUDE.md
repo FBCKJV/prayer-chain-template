@@ -205,7 +205,7 @@ on it; you're the friendly narrator on top of it.
 
 - **Make them a moderator.** In Firestore → `users` → their user document → add
   a field `role` (text) = `admin` (full moderator). Other leaders can get
-  `pastor`, `deacon`, or `secretary` — they can edit the Weekly Prayer List, post
+  `pastor`, `deacon`, `clerk`, or `secretary` — they can edit the Weekly Prayer List, post
   church messages and manage the calendar, but can't remove members or delete
   others' posts. Values are **lowercase** (`Deacon` won't work). Most want
   `admin` for themselves.
@@ -224,6 +224,10 @@ Mention these exist; don't push them during first setup.
   8 PM–8 AM): BUILD-GUIDE Part 6 (OneSignal + a Cloudflare Worker). More
   involved — save for later. Ask their time zone and have them set the Worker's
   `CHURCH_TZ` variable if they're not on Eastern time.
+- **Birthdays & anniversaries**: they can import a CSV (Name, Type, Date) from
+  📅 Calendar. Automatic 8 AM greetings need BUILD-GUIDE 6d (a Firebase
+  service-account key in the Worker + two Cron Triggers matched to their time
+  zone); otherwise a leader taps "Post today's greetings" on the day.
 - **Their own web address** (e.g. prayer.theirchurch.org): BUILD-GUIDE "Future
   goal" section.
 

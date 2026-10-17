@@ -1,7 +1,7 @@
 {
   "name": "Prayer Chain",
   "short_name": "Prayer",
-  "description": "Invite-only prayer requests and prayer chain for our church.",
+  "description": "Prayer requests & praise, church messages, and the church calendar for our church. Invite-only.",
   "id": "./",
   "start_url": "./index.html",
   "scope": "./",
